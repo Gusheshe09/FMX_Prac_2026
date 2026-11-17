@@ -1,0 +1,30 @@
+---
+output:
+  md_document:
+    variant: markdown_github
+---
+
+# Purpose
+
+This README documents the code and reasoning behind my answers to the 2026 Financial Econometrics practical exam. Write-ups are in Questions/QuestionX; all data folders are git-ignored.
+
+# Setup
+
+```{r setup, message = FALSE, warning = FALSE}
+library(rmsfuns)
+pacman::p_load(tidyverse, lubridate, tbl2xts, xts, PerformanceAnalytics, RcppRoll, fmxdat)
+```
+
+# Question 1: Exploring Risk and Uncertainty
+
+## Part A
+
+## Part B
+
+## Part C
+
+# Question 2: Mid, Small and Large Cap Indices
+
+# Question 3: Portfolio Return Comparison
+
+# Question 4: Portfolio Construction
