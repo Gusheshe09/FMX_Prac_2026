@@ -1,198 +1,270 @@
 ---
-title: "Paged HTML Document"
-author: "NF Katzke"
-date: "November 2021"
-# date: "`r Sys.Date()`"
-bibliography: Tex/ref.bib       # Do not edit: Keep this naming convention and location.
+title: 'ABC Fund: More Than Market Beta'
+author: "Kieron Maseko (26572982)"
+date: "November 2026"
 output:
-  pagedown::html_paged:
-    # template: wp_paged.html
-    # css: ['wp.css', 'wp-fonts.css', 'wp-page.css']
-    css: ["Template/default-fonts-Texevier.css", "Template/default-page-Texevier.css", "Template/default-Texevier.css"]
-    csl: Template/harvard-stellenbosch-university.csl # referencing format used.
-    template: ["Template/paged-Texevier.html"]
-
-    toc: true
-    # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
-    self_contained: TRUE
-abstract: |
-    This is an abstract. Much can be written here. Uncomment this line to go without an abstract.
-    Abstracts have no spaces, but can have bullets.
-
-    Bullets can be created as follows
-
-    + You can add bullets, but do not add colons please.
-
-    + Line breaks are also not permitted.
-
+  pagedown::html_paged: default
+  powerpoint_presentation:
+    slide_level: 2
+subtitle: Peer performance insights for the 2027 conference
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
-pacman::p_load(modelsummary, gt, knitr, kableExtra, tidyverse)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4.3, dpi = 200)
+
+library(rmsfuns)
+pacman::p_load(tidyverse, lubridate, tbl2xts, xts, PerformanceAnalytics, RcppRoll, fmxdat, flextable)
+
+Slide_Theme <- fmxdat::theme_fmx(title.size = fmxdat::ggpts(44), subtitle.size = fmxdat::ggpts(34),
+                                 legend.size = fmxdat::ggpts(36), axis.size = fmxdat::ggpts(38)) +
+  theme(axis.title = element_text(size = 13))
 ```
 
-\newpage
+```{r functions, include=FALSE}
+# All functions used in this deck (the same functions as in the code/ folder),
+# defined here so the document knits on its own.
 
-# Introduction {-}
+# Rolling CAPM statistics of each fund against the benchmark (monthly returns)
+# beta = cov(R_f, R_b) / var(R_b); R2 = cor^2 (share of return variation explained by the market);
+# alpha = annualised intercept. Computed from rolling means, so each fund needs Window months of data.
+Roll_Beta <- function(Funds, Bench, Window = 36) {
 
-This template has been adapted from pagedown::html_paged and is intended to help you simply create HTML that has a readable (pdf) feel to it.
+  Funds %>%
+    inner_join(Bench %>% select(date, BM = Return), by = "date") %>%
+    group_by(Name) %>% arrange(date) %>%
+    filter(n() >= Window) %>%
+    mutate(mx  = RcppRoll::roll_mean(BM, Window, fill = NA, align = "right"),
+           my  = RcppRoll::roll_mean(Return, Window, fill = NA, align = "right"),
+           mxy = RcppRoll::roll_mean(BM * Return, Window, fill = NA, align = "right"),
+           mxx = RcppRoll::roll_mean(BM^2, Window, fill = NA, align = "right"),
+           myy = RcppRoll::roll_mean(Return^2, Window, fill = NA, align = "right")) %>%
+    ungroup() %>%
+    filter(!is.na(mx)) %>%
+    mutate(Beta  = (mxy - mx * my) / (mxx - mx^2),
+           R2    = (mxy - mx * my)^2 / ((mxx - mx^2) * (myy - my^2)),
+           Alpha = (my - Beta * mx) * 12) %>%
+    select(date, Name, Beta, R2, Alpha)
 
-References are to be made as follows: [@fama1997] and @grinold2000 Such authors could also be referenced in brackets [@grinold2000] and together [@fama1997 \& @grinold2000]. Source the reference code from scholar.google.com by clicking on ``cite'' below article name. Then select BibTeX at the bottom of the Cite window, and proceed to copy and paste this code into your ref.bib file, located in the directory's Tex folder. Open this file in Rstudio for ease of management, else open it in your preferred Tex environment. Add and manage your article details here for simplicity - once saved, it will self-adjust in your paper.
+}
 
-> I suggest renaming the top line after \@article, as done in the template ref.bib file, to something more intuitive for you to remember. Do not change the rest of the code. Also, be mindful of the fact that bib references from google scholar may at times be incorrect. Reference Latex forums for correct bibtex notation.
+# Rolling annualised returns from monthly returns
+Roll_Returns_M <- function(df, Months = 12) {
 
-Writing in Rmarkdown is surprizingly easy - see [this website](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf) cheatsheet for a summary on writing Rmd writing tips.
+  df %>%
+    group_by(Name) %>% arrange(date) %>%
+    mutate(RollRet = RcppRoll::roll_prod(1 + Return, n = Months, fill = NA, align = "right")^(12 / Months) - 1) %>%
+    ungroup() %>%
+    filter(!is.na(RollRet))
 
-# Data  {-}
+}
 
-Notice how I used the curly brackets and dash to remove the numbering of the data section.
+# Monthly market dispersion: weighted cross-sectional volatility of Capped SWIX constituents,
+# using previous month-end weights and monthly (compounded daily) stock returns
+Monthly_CSV <- function(Size_Idx, Stock_Rets, Fund = "CappedSWIX") {
 
-Discussion of data should be thorough with a table of statistics and ideally a figure.
+  Stock_M <-
+    Stock_Rets %>% filter(!is.na(Return)) %>%
+    mutate(YM = format(date, "%Y%m")) %>%
+    group_by(Tickers, YM) %>%
+    summarise(date = max(date), Ret = prod(1 + Return) - 1, .groups = "drop")
 
-In your tempalte folder, you will find a Data and a Code folder. In order to keep your data files neat, store all of them in your Data folder. Also, I strongly suggest keeping this Rmd file for writing and executing commands, not writing out long pieces of data-wrangling. In the example below, I simply create a ggplot template for scatter plot consistency. I suggest keeping all your data in a data folder.
+  W <-
+    Size_Idx %>% filter(Fund == !!Fund) %>%
+    mutate(YM = format(date %m+% months(1), "%Y%m")) %>%      # weights at end of t-1 apply in month t
+    select(YM, Tickers, Weight)
 
-<!-- The following is a code chunk. It must have its own unique name (after the r), or no name. After the comma follows commands for R which are self-explanatory. By default, the code and messages will not be printed in your pdf, just the output: -->
+  Stock_M %>%
+    inner_join(W, by = c("YM", "Tickers")) %>%
+    group_by(YM) %>%
+    mutate(w = Weight / sum(Weight)) %>%
+    summarise(date = max(date), CSV = sqrt(sum(w * (Ret - sum(w * Ret))^2)), .groups = "drop")
 
-```{r }
-
-  # This is just a random plot to show you a plot. This is done if the getwd() does not point to your Template's directory.
-  # Set WD below to your project's working directory.
-
-  g <-
-  ggplot(data = mtcars) +
-  geom_point(aes(x = disp, y = hp, color = cyl)) +
-  theme_bw() +
-  # theme(legend.position = "none") +
-  theme(plot.title = element_text(size = 10)) +
-  theme(axis.title = element_text(size = 10),
-        axis.title.x = element_text()) +
-  labs(y = "y-axis", x = "x-axis", title = "Some amazing plot")
-
-g
-
+}
 ```
 
+```{r data_prep, include=FALSE}
+Active_Manager_Peers <- read_rds("data/Active_Managers.rds") %>% rename(Return = Returns)
+ABC_Fund <- read_rds("data/ABC_Fund.rds") %>% rename(Return = Returns)
+Idx_Daily <- read_rds("data/Index_Returns_Daily.rds")
+Size_Idx <- read_rds("data/Monthly_Index_Constituents.rds")
+Stock_Rets <- read_rds("data/Stock_Returns_Daily.rds") %>%
+  select(date, Tickers, Return = Returns) %>%
+  mutate(Return = ifelse(abs(Return) > 0.5, NA, Return))
 
+# Benchmark: daily Capped SWIX compounded to calendar month-ends
+Bench_M <- Idx_Daily %>% filter(Tickers == "J433") %>%
+  mutate(YM = format(date, "%Y%m")) %>%
+  group_by(YM) %>% summarise(Return = prod(1 + Returns) - 1, .groups = "drop") %>%
+  mutate(date = ceiling_date(ymd(paste0(YM, "01")), "month") - days(1)) %>% select(date, Return)
 
+Funds <- bind_rows(Active_Manager_Peers, ABC_Fund) %>%
+  mutate(Type = ifelse(Name == "ABC_Fund", "ABC Fund", "Peers"))
+Peer_Med <- Active_Manager_Peers %>% group_by(date) %>% summarise(PeerMed = median(Return))
 
+# Rolling beta
+RB <- Roll_Beta(Funds %>% select(date, Name, Return), Bench_M, Window = 36) %>%
+  mutate(Type = ifelse(Name == "ABC_Fund", "ABC Fund", "Peers"))
+RB_Sum <- RB %>% group_by(Type) %>% summarise(Beta = median(Beta), R2 = median(R2), Alpha = median(Alpha))
+ABC_Beta_Now <- RB %>% filter(date == max(date)) %>% mutate(Pct = percent_rank(Beta)) %>% filter(Type == "ABC Fund")
 
-#  Methodology \label{Meth} {-}
+# Drivers: PCA on peers with full history since 2015
+PCA_Panel <- Active_Manager_Peers %>% filter(date >= ymd(20150131)) %>%
+  group_by(Name) %>% filter(n() == 130) %>% ungroup() %>% spread(Name, Return)
+pca <- prcomp(PCA_Panel %>% select(-date), scale. = TRUE)
+PC1_Share <- summary(pca)$importance[2, 1]
+PC <- tibble(date = PCA_Panel$date, PC1 = pca$x[, 1])
+Funds_PC <- Funds %>% inner_join(PC, by = "date") %>% group_by(Name, Type) %>% filter(n() >= 60) %>%
+  summarise(R2_PC1 = cor(Return, PC1)^2, .groups = "drop")
+Cor_Peer <- Funds %>% filter(date >= ymd(20150131)) %>%
+  inner_join(Peer_Med, by = "date") %>% inner_join(Bench_M %>% rename(BM = Return), by = "date") %>%
+  group_by(Name, Type) %>% filter(n() >= 60) %>%
+  summarise(Cor_Peer = cor(Return, PeerMed), TE = sd(Return - BM) * sqrt(12), .groups = "drop") %>%
+  left_join(Funds_PC %>% select(Name, R2_PC1), by = "Name")
 
-## Subsection {-}
-Ideally do not overuse subsections. It equates to bad writing.^[This is an example of a footnote by the way. Something that should also not be overused.]
+# Relative performance
+RR <- Roll_Returns_M(Funds %>% select(date, Name, Return), 12)
+Bands <- RR %>% filter(Name != "ABC_Fund") %>% group_by(date) %>%
+  summarise(q05 = quantile(RollRet, .05), q25 = quantile(RollRet, .25), q50 = median(RollRet),
+            q75 = quantile(RollRet, .75), q95 = quantile(RollRet, .95), .groups = "drop") %>%
+  inner_join(RR %>% filter(Name == "ABC_Fund") %>% select(date, ABC = RollRet), by = "date")
+Rank <- RR %>% group_by(date) %>% filter(any(Name == "ABC_Fund")) %>%
+  mutate(Pct = percent_rank(RollRet)) %>% filter(Name == "ABC_Fund") %>% ungroup()
+Track <- Funds %>% filter(Name == "ABC_Fund", date >= ymd(20150131)) %>% select(date, ABC = Return) %>%
+  inner_join(Peer_Med, by = "date") %>% inner_join(Bench_M %>% rename(BM = Return), by = "date")
 
-## Math section {-}
-
-Equations should be written as such:
-
-\begin{align}
-\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \label{eq1} \\
-\int_{x = 1}^{\infty}x_{i} = 1 \notag
-\end{align}
-
-If you would like to see the equations as you type in Rmarkdown, use $ symbols instead (see this for yourself by adjusted the equation):
-
-$$
-\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \\
-\int_{x = 1}^{\infty}x_{i} = 1
-$$
-
-Writing nice math requires practice. Note I used a forward slashes to make a space in the equations. I can also align equations using  __\&__, and set to numbering only the first line. Now I will have to type ``begin equation'' which is a native \LaTeX command. Here follows a more complicated equation:
-
-
-\begin{align}
-	y_t &= c + B(L) y_{t-1} + e_t   \label{eq2}    \\ \notag
-	e_t &= H_t^{1/2}  z_t ; \quad z_t \sim  N(0,I_N) \quad \& \quad H_t = D_tR_tD_t \\ \notag
-		D_t^2 &= {\sigma_{1,t}, \dots, \sigma_{N,t}}   \\ \notag
-		\sigma_{i,t}^2 &= \gamma_i+\kappa_{i,t}  v_{i, t-1}^2 +\eta_i  \sigma_{i, t-1}^2, \quad \forall i \\ \notag
-		R_{t, i, j} &= {diag(Q_{t, i, j}}^{-1}) . Q_{t, i, j} . diag(Q_{t, i, j}^{-1})  \\ \notag
-		Q_{t, i, j} &= (1-\alpha-\beta)  \bar{Q} + \alpha  z_t  z_t'  + \beta  Q_{t, i, j} \notag
-\end{align}
-
-Note that above we've aligned the equations by the equal signs. I also want only one tag, and I create spaces using ``quads''.
-
-See if you can figure out how to do complex math using the two examples provided.
-
-<!-- $$ -->
-<!-- This is a commented out section in the writing part. -->
-<!-- Comments are created by highlighting text, amnd pressing CTL+C -->
-<!-- \\begin{align} -->
-<!-- \\beta = \\alpha^2 -->
-<!-- \end{align} -->
-<!-- $$ -->
-
-## Results {-}
-
-Tables can be included as follows. Use the _xtable_ (or kable) package for tables. Table placement = H implies Latex tries to place the table Here, and not on a new page (there are, however, very many ways to skin this cat. Luckily there are many forums online!).
-
-```{r table-1, echo=TRUE, message=FALSE, warning=FALSE, results="asis"}
-library(knitr)
-library(kableExtra)
-
-data <- mtcars[1:5,] %>% tibble::as_tibble()
-
-table <- kable(data, row.names = TRUE,
-      caption = 'Table with kable() and kablestyling()',
-      format = "html", booktabs = T) %>%
-        kable_styling(full_width = T,
-                      latex_options = c("striped",
-                                        "scale_down",
-                                        "HOLD_position"),
-                      font_size = 13)
-table
+# Dispersion
+CSV_M <- Monthly_CSV(Size_Idx, Stock_Rets)
+D <- Track %>% mutate(YM = format(date, "%Y%m")) %>% inner_join(CSV_M %>% select(YM, CSV), by = "YM") %>%
+  mutate(Regime = case_when(CSV >= quantile(CSV, 0.8) ~ "High dispersion",
+                            CSV <= quantile(CSV, 0.2) ~ "Low dispersion", TRUE ~ "Normal"))
+R12 <- D %>% arrange(date) %>%
+  mutate(Rel12 = RcppRoll::roll_sum(ABC - PeerMed, 12, fill = NA, align = "right"),
+         CSV12 = RcppRoll::roll_mean(CSV, 12, fill = NA, align = "right")) %>%
+  filter(!is.na(Rel12)) %>%
+  mutate(Reg = case_when(CSV12 >= quantile(CSV12, 0.8) ~ "High", CSV12 <= quantile(CSV12, 0.2) ~ "Low", TRUE ~ "Normal"))
 ```
 
-To reference calculations __in text__, _do this:_ From table \@ref(tab:table-1) we see the average value of mpg is `r mean(mtcars[1:5,]$mpg)`. Notice the use of table-2 in the chunk name. That's the good stuff.
+## The case for ABC Fund in three points
 
-\newpage
+- **Most active managers mostly deliver market beta.** The typical peer has a beta of `r round(RB_Sum$Beta[RB_Sum$Type == "Peers"], 2)`, and the market explains `r round(RB_Sum$R2[RB_Sum$Type == "Peers"] * 100)`% of its returns.
+- **ABC Fund is genuinely different.** Its beta is now `r round(ABC_Beta_Now$Beta, 2)`, lower than `r round(ABC_Beta_Now$Pct * 100)`% of peers, and its returns follow its own decisions rather than the industry consensus.
+- **The difference has paid off.** Since 2015 ABC has beaten both the typical peer and the benchmark, with less volatility, and it protects capital best when markets fall.
 
+## The industry is mostly market beta
 
-# Model summary
-
-
-Check [this](https://vincentarelbundock.github.io/modelsummary/articles/modelsummary.html) link out for more. Note this package also plays nicely with gt, kableExtra, etc.
-
-```{r}
-
-library(modelsummary);library(gt)
-
-# modelsummary works well with gt:
-
-Tab <-
-
-datasummary_skim(swiss,
-type="numeric",
- histogram=T,
- title = "Summary: Numeric variables", output = "gt") %>%
-
-        # column labels
-    tab_spanner(label = 'Statistics', columns = c("Mean", "SD")) %>%
-    tab_spanner(label = 'Quantiles', columns = starts_with("P")) %>%
-    # footnote
-    tab_footnote(footnote = md("A very **important** Footnote."),
-                 locations = cells_body(rows = 3, columns = 1)) %>%
-
-    tab_options(data_row.padding = px(4),table.width = pct(60),
-            column_labels.font.size = pct(100),
-            column_labels.vlines.width = 1, table.font.size = pct(60))
-
-Tab
+```{r beta_plot}
+RB %>% filter(month(date) == 12 | date == max(date)) %>% mutate(Year = factor(year(date))) %>%
+  ggplot(aes(Year, Beta)) +
+  geom_jitter(data = . %>% filter(Type == "Peers"), color = "grey60", alpha = 0.5, width = 0.2, size = 1.2) +
+  geom_boxplot(data = . %>% filter(Type == "Peers"), fill = NA, outlier.shape = NA, color = "steelblue", linewidth = 0.8) +
+  geom_point(data = . %>% filter(Type == "ABC Fund"), color = "red", size = 5, shape = 18) +
+  geom_hline(yintercept = 1, linetype = 2, color = "grey40") +
+  labs(title = "Rolling 3-year beta to the Capped SWIX (each December)",
+       subtitle = "Grey: active peers. Red: ABC Fund. Dashed: the market (beta = 1)",
+       x = "", y = "Beta") +
+  Slide_Theme
 ```
 
+## ABC follows its own path
 
-# References {-}
+```{r drivers_plot}
+Cor_Peer %>% filter(!is.na(R2_PC1)) %>%
+  ggplot(aes(Cor_Peer, TE)) +
+  geom_point(data = . %>% filter(Type == "Peers"), color = "grey55", alpha = 0.7, size = 2.5) +
+  geom_point(data = . %>% filter(Type == "ABC Fund"), color = "red", size = 6, shape = 18) +
+  annotate("text", x = Cor_Peer$Cor_Peer[Cor_Peer$Type == "ABC Fund"], y = Cor_Peer$TE[Cor_Peer$Type == "ABC Fund"],
+           label = "ABC Fund", hjust = -0.2, color = "red", size = 6) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = paste0("One common factor explains ", round(PC1_Share * 100), "% of the industry's returns"),
+       subtitle = "Each dot is a fund, 2015-2025. Further left = less like the typical peer",
+       x = "Correlation with the median peer", y = "Tracking error vs Capped SWIX") +
+  Slide_Theme
+```
 
-<div id="refs"></div>
+## Consistently ahead of the pack
 
+```{r bands_plot}
+g <- Bands %>% ggplot(aes(date)) +
+  geom_ribbon(aes(ymin = q05, ymax = q95), fill = "grey85") +
+  geom_ribbon(aes(ymin = q25, ymax = q75), fill = "grey65") +
+  geom_line(aes(y = q50), color = "grey30", linetype = 2) +
+  geom_line(aes(y = ABC), color = "red", linewidth = 1.2) +
+  labs(title = "Rolling 12-month return: ABC Fund (red) vs the range of peers",
+       subtitle = paste0("Bands: middle 90% and 50% of peers. ABC in the top half ", round(mean(Rank$Pct > 0.5) * 100), "% of the time"),
+       x = "", y = "") +
+  Slide_Theme
+fmxdat::finplot(g, y.pct = TRUE, x.date.type = "%Y", x.date.dist = "2 years")
+```
 
-# Appendix {-}
+## Track record since 2015
 
-## Appendix A {-}
+```{r track_table}
+tibble(
+  Measure = c("Annualised return", "Annualised volatility", "Return per unit of risk",
+              "Rolling 3-year beta (median)", "Alpha (annualised, median)"),
+  `ABC Fund` = c(prod(1 + Track$ABC)^(12 / nrow(Track)) - 1, sd(Track$ABC) * sqrt(12),
+                 (prod(1 + Track$ABC)^(12 / nrow(Track)) - 1) / (sd(Track$ABC) * sqrt(12)),
+                 RB_Sum$Beta[RB_Sum$Type == "ABC Fund"], RB_Sum$Alpha[RB_Sum$Type == "ABC Fund"]),
+  `Typical peer` = c(prod(1 + Track$PeerMed)^(12 / nrow(Track)) - 1, sd(Track$PeerMed) * sqrt(12),
+                     (prod(1 + Track$PeerMed)^(12 / nrow(Track)) - 1) / (sd(Track$PeerMed) * sqrt(12)),
+                     RB_Sum$Beta[RB_Sum$Type == "Peers"], RB_Sum$Alpha[RB_Sum$Type == "Peers"]),
+  `Capped SWIX` = c(prod(1 + Track$BM)^(12 / nrow(Track)) - 1, sd(Track$BM) * sqrt(12),
+                    (prod(1 + Track$BM)^(12 / nrow(Track)) - 1) / (sd(Track$BM) * sqrt(12)), 1, 0)) %>%
+  mutate(across(-Measure, ~ ifelse(Measure %in% c("Return per unit of risk", "Rolling 3-year beta (median)"),
+                                   sprintf("%.2f", .), sprintf("%.1f%%", . * 100)))) %>%
+  flextable() %>% fontsize(size = 16, part = "all") %>% bold(part = "header") %>%
+  bg(j = "ABC Fund", bg = "#FDE2E2", part = "body") %>%
+  add_footer_lines("January 2015 to October 2025, monthly returns. Typical peer = median active manager each month.") %>%
+  fontsize(size = 12, part = "footer") %>% autofit()
+```
 
-Some appendix information here
+## Where the edge comes from: falling markets
 
-## Appendix B {-}
+```{r updown_plot}
+D %>% mutate(Market = ifelse(BM < 0, "Months the market fell", "Months the market rose")) %>%
+  group_by(Market) %>%
+  summarise(`ABC Fund` = mean(ABC) * 12, `Typical peer` = mean(PeerMed) * 12, `Capped SWIX` = mean(BM) * 12,
+            Hit = mean(ABC > PeerMed), .groups = "drop") %>%
+  gather(Fund, Ret, `ABC Fund`, `Typical peer`, `Capped SWIX`) %>%
+  mutate(Fund = factor(Fund, levels = c("ABC Fund", "Typical peer", "Capped SWIX"),
+                       labels = c("ABC\nFund", "Typical\npeer", "Capped\nSWIX"))) %>%
+  ggplot(aes(Fund, Ret, fill = Fund)) + geom_col(width = 0.6) +
+  geom_text(aes(label = scales::percent(Ret, accuracy = 1), vjust = ifelse(Ret < 0, 1.4, -0.5)), size = 5) +
+  facet_wrap(~Market, scales = "free_y") +
+  scale_fill_manual(values = c("red", "grey55", "steelblue")) +
+  scale_y_continuous(labels = scales::percent, expand = expansion(mult = 0.18)) +
+  labs(title = "Average return in falling and rising months (annualised)",
+       subtitle = paste0("ABC beat the typical peer in ",
+                         round(mean(D$ABC[D$BM < 0] > D$PeerMed[D$BM < 0]) * 100), "% of the months the market fell"),
+       x = "", y = "") +
+  Slide_Theme + theme(legend.position = "none")
+```
 
+## Does high market dispersion reward ABC?
 
+```{r disp_plot}
+R12 %>% ggplot(aes(CSV12, Rel12)) +
+  geom_hline(yintercept = 0, color = "grey40") +
+  geom_point(aes(color = Reg), size = 3, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 0.8) +
+  scale_color_manual(values = c(High = "red", Low = "steelblue", Normal = "grey60"), name = "Dispersion") +
+  scale_y_continuous(labels = scales::percent) + scale_x_continuous(labels = scales::percent) +
+  labs(title = "Over 12 months, yes: ABC's edge grows when stocks diverge",
+       subtitle = paste0("Each dot is a 12-month window. ABC beat the typical peer in ",
+                         round(mean(R12$Rel12[R12$Reg == "High"] > 0) * 100), "% of high-dispersion windows"),
+       x = "Average market dispersion over 12 months", y = "ABC return minus typical peer") +
+  Slide_Theme
+```
 
+## Dispersion: what we can and cannot say
+
+- **Over a year or more, the claim holds.** In the most dispersed 12-month periods ABC beat the typical peer by `r round(mean(R12$Rel12[R12$Reg == "High"]) * 100, 1)`%, against `r round(mean(R12$Rel12[R12$Reg != "High"]) * 100, 1)`% in other periods.
+- **Month to month, it does not.** In the single most dispersed months ABC actually lagged its peers (it beat them in only `r round(mean(D$ABC[D$Regime == "High dispersion"] > D$PeerMed[D$Regime == "High dispersion"]) * 100)`% of those months).
+- **Most of the evidence comes from one period (2020-2022).** We suggest presenting dispersion as supporting colour, and leading with ABC's low beta and downside protection.
+
+## Why ABC belongs in client portfolios
+
+- **Something other than market beta:** clients can buy beta cheaply in an index fund; ABC offers a different return stream.
+- **A better ride:** higher returns than the typical peer and the benchmark since 2015, with less volatility.
+- **Protection when it matters:** ABC has done best when markets fall, which is when clients need it most.
+- **Caveats:** past performance does not guarantee future returns; the analysis uses returns only and covers 2015-2025, and ABC tends to lag in strong rising markets.
