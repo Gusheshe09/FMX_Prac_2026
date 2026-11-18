@@ -923,5 +923,137 @@ D %>% mutate(Market = ifelse(BM < 0, "Down month", "Up month")) %>% group_by(Mar
 
 # Question 4: Portfolio Construction
 
+```{r Q4.0 setup}
+library(rmsfuns)
+pacman::p_load(tidyverse, lubridate, tbl2xts, xts, PerformanceAnalytics, fmxdat, quadprog, Matrix)
+fmxdat::source_all("Questions/Question4/code")
 
+MSCI <- read_rds("data/MSCI_Indexes.rds")
+Bond_Yields <- read_rds("data/Global_Bond_Yields.rds")
+Commods <- read_rds("data/Commodities.rds")
+LCL_Yield_Proxies <- read_rds("data/Monthly_LCL_Yield_Indexes.rds")
+Idx_Daily <- read_rds("data/Index_Returns_Daily.rds")
+```
+
+```{r Q4.1 monthly returns}
+Global_Eq <- Monthly_From_TRI(MSCI %>% filter(Name %in% c("MSCI_USA", "MSCI_EU", "MSCI_Jap", "MSCI_EM")))
+Global_Bonds <- Bond_TRI(Bond_Yields %>% filter(Name %in% c("US_10Yr", "Germany_10Yr", "UK_10Yr")))
+Commod_M <- Monthly_From_TRI(Commods %>% filter(Name %in% c("Bcom_Index", "Gold")))
+
+Local_Eq <- Idx_Daily %>%
+  filter(Tickers %in% c("J200", "J201", "STXMOMJ433", "STXVALJ433", "STXLVLJ433")) %>%
+  mutate(Name = recode(Tickers, J200 = "SA_Large", J201 = "SA_Mid", STXMOMJ433 = "SA_Momentum",
+                       STXVALJ433 = "SA_Value", STXLVLJ433 = "SA_LowVol")) %>%
+  mutate(YM = format(date, "%Y%m")) %>% group_by(Name, YM) %>%
+  summarise(date = max(date), Return = prod(1 + Returns) - 1, n = n(), .groups = "drop") %>%
+  group_by(Name) %>% filter(!(row_number() == 1 & n < 15)) %>% ungroup() %>%   # drop partial first month
+  select(date, Name, Return)
+
+Local_Yield <- LCL_Yield_Proxies %>%
+  mutate(Name = recode(Tickers, ALBITR = "SA_Bonds", CILITR = "SA_ILB", J253 = "SA_Property")) %>%
+  select(date, Name, Return = Returns)
+
+Rets_M <- bind_rows(Global_Eq, Global_Bonds, Commod_M, Local_Eq, Local_Yield) %>%
+  mutate(date = ceiling_date(date, "month") - days(1)) %>%     # align to calendar month-ends
+  filter(date >= ymd(20100131), date <= ymd(20260930))
+```
+
+```{r Q4.2 asset info}
+Info <- tribble(
+  ~Name,          ~Class,      ~Region,
+  "MSCI_USA",     "Equity",    "Global",
+  "MSCI_EU",      "Equity",    "Global",
+  "MSCI_Jap",     "Equity",    "Global",
+  "MSCI_EM",      "Equity",    "Global",
+  "US_10Yr",      "Bonds",     "Global",
+  "Germany_10Yr", "Bonds",     "Global",
+  "UK_10Yr",      "Bonds",     "Global",
+  "Bcom_Index",   "Commodity", "Global",
+  "Gold",         "Commodity", "Global",
+  "SA_Large",     "Equity",    "Local",
+  "SA_Mid",       "Equity",    "Local",
+  "SA_Momentum",  "Equity",    "Local",
+  "SA_Value",     "Equity",    "Local",
+  "SA_LowVol",    "Equity",    "Local",
+  "SA_Property",  "Equity",    "Local",
+  "SA_Bonds",     "Bonds",     "Local",
+  "SA_ILB",       "Bonds",     "Local")
+
+Rets_M %>% group_by(Name) %>%
+  summarise(Start = min(date), Months = n(),
+            Ann_Ret = prod(1 + Return)^(12 / n()) - 1, Ann_Vol = sd(Return) * sqrt(12)) %>%
+  mutate(across(c(Ann_Ret, Ann_Vol), ~ round(., 3)))
+```
+
+```{r Q4.3 optimise}
+# Quarterly rebalancing from end-2019 (gives a 10-year look-back from 2010)
+Reb_Dates <- Rets_M %>% distinct(date) %>%
+  filter(month(date) %in% c(3, 6, 9, 12), date >= ymd(20191231), date < max(date)) %>% pull(date)
+
+W_MinVol  <- map_df(Reb_Dates, ~ Optim_Weights(.x, Rets_M, Info, Type = "MinVol"))
+W_MeanVar <- map_df(Reb_Dates, ~ Optim_Weights(.x, Rets_M, Info, Type = "MeanVar"))
+
+Static <- tribble(~Name, ~Weight,
+  "SA_Large", 0.20, "SA_Mid", 0.10, "SA_Property", 0.05,
+  "MSCI_USA", 0.13, "MSCI_EU", 0.06, "MSCI_Jap", 0.02, "MSCI_EM", 0.04,
+  "SA_Bonds", 0.12, "SA_ILB", 0.03, "US_10Yr", 0.05, "Germany_10Yr", 0.03, "UK_10Yr", 0.02,
+  "Gold", 0.08, "Bcom_Index", 0.07)
+W_Static <- map_df(Reb_Dates, ~ Static %>% mutate(date = .x))
+```
+
+```{r Q4.4 check limits}
+bind_rows(Check_Limits(W_MinVol, Info) %>% mutate(Port = "Min Volatility"),
+          Check_Limits(W_MeanVar, Info) %>% mutate(Port = "Mean-Variance"),
+          Check_Limits(W_Static, Info) %>% mutate(Port = "Static Balanced")) %>%
+  group_by(Port) %>% summarise(across(-date, max))
+
+W_MinVol %>% filter(date == max(date), Weight > 0) %>% arrange(-Weight)
+W_MeanVar %>% filter(date == max(date), Weight > 0) %>% arrange(-Weight)
+```
+
+```{r Q4.5 weights plot}
+g <- bind_rows(W_MinVol %>% mutate(Port = "Min Volatility"), W_MeanVar %>% mutate(Port = "Mean-Variance")) %>%
+  left_join(Info, by = "Name") %>% mutate(Group = paste(Region, Class)) %>%
+  group_by(Port, date, Group) %>% summarise(Weight = sum(Weight), .groups = "drop") %>%
+  ggplot() + geom_area(aes(date, Weight, fill = Group)) +
+  facet_wrap(~Port, ncol = 1) + fmxdat::theme_fmx() +
+  labs(title = "Weights by region and asset class", x = "", y = "")
+fmxdat::finplot(g, y.pct = TRUE)
+```
+
+```{r Q4.6 backtest}
+P1 <- Port_Return(W_MinVol, Rets_M, "Min Volatility")
+P2 <- Port_Return(W_MeanVar, Rets_M, "Mean-Variance")
+P3 <- Port_Return(W_Static, Rets_M, "Static Balanced")
+Ports <- bind_rows(P1$Ret, P2$Ret, P3$Ret)
+
+Ports_xts <- Ports %>% mutate(Name = gsub(" |-", "_", Name)) %>% tbl_xts(cols_to_xts = Return, spread_by = Name)
+round(rbind(table.AnnualizedReturns(Ports_xts, scale = 12),
+            `Max DD` = maxDrawdown(Ports_xts),
+            `Mod ES 95` = ES(Ports_xts, p = .95, method = "modified")), 3)
+
+g <- Ports %>% group_by(Name) %>% arrange(date) %>% mutate(Cum = cumprod(1 + Return)) %>% ungroup() %>%
+  ggplot() + geom_line(aes(date, Cum, color = Name), linewidth = 0.9) + fmxdat::theme_fmx() +
+  labs(title = "Cumulative returns", x = "", y = "Growth of R1")
+fmxdat::finplot(g)
+```
+
+```{r Q4.7 drift, turnover, risk}
+# Drift between rebalances (beginning-of-period weights)
+P1$BOP %>% xts_tbl() %>% gather(Name, W, -date) %>% left_join(Info, by = "Name") %>%
+  group_by(date) %>% summarise(Global = sum(W[Region == "Global"]), Bonds = sum(W[Class == "Bonds"]), Max = max(W)) %>%
+  summarise(across(-date, max))
+
+# Average one-way turnover per rebalance
+TO <- function(W) W %>% complete(date, Name, fill = list(Weight = 0)) %>% group_by(Name) %>% arrange(date) %>%
+  mutate(d = abs(Weight - lag(Weight))) %>% group_by(date) %>% summarise(T = sum(d, na.rm = TRUE) / 2) %>%
+  summarise(Turnover = mean(T[-1])) %>% pull()
+c(MinVol = TO(W_MinVol), MeanVar = TO(W_MeanVar))
+
+# Risk contribution by asset class at the last rebalance
+bind_rows(Risk_Contrib(W_MinVol, Rets_M, Info, max(Reb_Dates), "Min Volatility"),
+          Risk_Contrib(W_MeanVar, Rets_M, Info, max(Reb_Dates), "Mean-Variance"),
+          Risk_Contrib(W_Static, Rets_M, Info, max(Reb_Dates), "Static Balanced")) %>%
+  group_by(Port, Class) %>% summarise(Weight = sum(Weight), Risk = sum(Risk_Share), .groups = "drop")
+```
 
