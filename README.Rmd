@@ -19,12 +19,748 @@ pacman::p_load(tidyverse, lubridate, tbl2xts, xts, PerformanceAnalytics, RcppRol
 
 ## Part A
 
+Load the data and source the functions. The suggested datasets from the paper, plus MSCI indexes as the global comparison. Functions are live in the question folder’s code/
+
+```{r Q1A_data}
+fmxdat::source_all("Questions/Question1/code")
+
+Uncertainty_Indexes <- "data/Econ_Uncertainty_Indexes.rds" %>% read_rds()
+Implied_Vol <- "data/Implied_Vol_Indexes.rds" %>% read_rds()
+Idx_Daily <- read_rds("data/Index_Returns_Daily.rds")
+Local_Cncy_Vol_Index <- read_rds("data/LCL_Currency_Vol_Index.rds")
+Gl_Cncy_Vol_Index <- read_rds("data/Global_Currency_Vol_Index.rds")
+Commods <- read_rds("data/Commodities.rds")
+MSCI <- read_rds("data/MSCI_Indexes.rds")
+
+# Familiarise: which local indexes do we have, and from when?
+Idx_Daily %>% group_by(Tickers, Name) %>%
+  summarise(Start = first(date), End = last(date), N = n(), .groups = "drop")
+```
+
+
+Realised volatility, local vs global. Local: Capped SWIX, Top 40, MidCaps, SmallCaps. Global: MSCI ACWI and MSCI EM, with simple returns computed from their total return indexes.
+
+```{r Q1A_realised}
+StartDate <- ymd(20150101)
+
+Local_Rets <-
+  Idx_Daily %>%
+  filter(Tickers %in% c("J433", "J200", "J201", "J202")) %>%
+  select(date, Name, Return = Returns)
+
+Global_Rets <-
+  MSCI %>%
+  filter(Name %in% c("MSCI_ACWI", "MSCI_EM")) %>%
+  arrange(date) %>%
+  group_by(Name) %>%
+  mutate(Return = TRI / lag(TRI) - 1) %>%
+  ungroup() %>%
+  filter(date >= StartDate, !is.na(Return)) %>%
+  select(date, Name, Return)
+
+Vol_Rets <- bind_rows(Local_Rets, Global_Rets)
+
+# Calendar-year annualised volatility (%)
+Vol_Table(Vol_Rets) %>% mutate(across(-Year, ~ round(. * 100, 1)))
+
+Roll_Vol_Plot(Vol_Rets %>% filter(Name %in% c("Capped SWIX", "MSCI_ACWI", "MSCI_EM")),
+              Width = 63,
+              Title = "Rolling 3-month realised volatility",
+              Subtitle = "Local (Capped SWIX, ZAR) vs global (MSCI, USD)")
+```
+
+Fear gauges. Implied volatility (VIX, V2X, VXEEM), currency volatility (SAVIUSD for the ZAR, JPMVXYGL globally), global policy uncertainty (EPU) and bond volatility (MOVE), averaged by month. Fixes SAVIUSD values that were recorded divided by 100.
+
+
+```{r Q1A_fear, fig.width = 10, fig.height = 6}
+Local_Cncy_Vol_Index <-
+  Local_Cncy_Vol_Index %>%
+  mutate(TRI = ifelse(TRI < 1, TRI * 100, TRI))   # data fix: 2021-2026 prints divided by 100
+
+Fear <-
+  bind_rows(Implied_Vol,
+            Local_Cncy_Vol_Index %>% select(-Description),
+            Gl_Cncy_Vol_Index,
+            Uncertainty_Indexes %>% filter(Name %in% c("EPUCGLCP", "MOVE_Index"))) %>%
+  filter(date >= StartDate) %>%
+  mutate(YM = format(date, "%Y%m")) %>%
+  group_by(Name, YM) %>%
+  summarise(date = last(date), Value = mean(TRI, na.rm = TRUE), .groups = "drop")
+
+g_fear <-
+  Fear %>%
+  ggplot() +
+  geom_line(aes(date, Value, color = Name), linewidth = 0.8) +
+  facet_wrap(~Name, scales = "free_y") +
+  labs(title = "Global and local fear gauges (monthly averages)", x = "", y = "") +
+  fmxdat::theme_fmx() +
+  theme(legend.position = "none")
+
+fmxdat::finplot(g_fear, x.date.type = "%y", x.date.dist = "2 years")
+
+# Yearly averages for the write-up
+Fear %>%
+  mutate(Year = substr(YM, 1, 4)) %>%
+  group_by(Name, Year) %>%
+  summarise(Avg = round(mean(Value), 1), .groups = "drop") %>%
+  spread(Name, Avg)
+```
+
+GARCH conditional volatility. Demeaned log returns (Practical 6). Test for ARCH effects, choose the variant on information criteria, then fit AR(1)-GJR-GARCH(1,1) with a skewed-t distribution to the Capped SWIX and MSCI ACWI.
+
+```{r Q1A_garch}
+pacman::p_load(rugarch)
+
+GARCH_Rets <-
+  Vol_Rets %>%
+  filter(Name %in% c("Capped SWIX", "MSCI_ACWI")) %>%
+  mutate(Name = gsub(" ", "_", Name)) %>%      # tbl_xts would otherwise rename to Capped.SWIX
+  group_by(Name) %>%
+  arrange(date) %>%
+  mutate(dlogret = log(1 + Return)) %>%
+  mutate(scaledret = dlogret - mean(dlogret, na.rm = TRUE)) %>%
+  ungroup()
+
+xts_GARCH <- GARCH_Rets %>% tbl_xts(cols_to_xts = scaledret, spread_by = Name)
+
+SWIX <- na.omit(xts_GARCH[, "Capped_SWIX"])    # select by NAME: tbl_xts sorts columns alphabetically
+ACWI <- na.omit(xts_GARCH[, "MSCI_ACWI"])
+
+# 1. ARCH effects? H0: no autocorrelation in squared returns
+Box.test(coredata(SWIX^2), type = "Ljung-Box", lag = 12)
+Box.test(coredata(ACWI^2), type = "Ljung-Box", lag = 12)
+
+# 2. Which variant? (lower is better)
+GARCH_Compare(SWIX)
+
+# 3. Fit and inspect
+Fit_SWIX <- GARCH_Fit(SWIX)
+Fit_ACWI <- GARCH_Fit(ACWI)
+round(Fit_SWIX@fit$matcoef, 4); persistence(Fit_SWIX)
+round(Fit_ACWI@fit$matcoef, 4); persistence(Fit_ACWI)
+
+# 4. Model check: standardised residuals squared should be white noise
+Box.test(coredata(residuals(Fit_SWIX, standardize = TRUE)^2), type = "Ljung-Box", lag = 12)
+
+# 5. Conditional volatility: plot, co-movement and yearly averages
+Sigmas <- bind_rows(GARCH_Sigma(Fit_SWIX, "Capped SWIX"), GARCH_Sigma(Fit_ACWI, "MSCI ACWI"))
+
+g_garch <-
+  Sigmas %>%
+  ggplot() +
+  geom_line(aes(date, Sigma, color = Name), linewidth = 0.8, alpha = 0.8) +
+  labs(title = "GJR-GARCH(1,1) conditional volatility", x = "", y = "Annualised sigma") +
+  fmxdat::theme_fmx()
+
+fmxdat::finplot(g_garch, y.pct = TRUE, y.pct_acc = 1)
+
+Sigmas %>% spread(Name, Sigma) %>% na.omit() %>%
+  summarise(Correlation = cor(`Capped SWIX`, `MSCI ACWI`))
+```
+
+
+Stratification: does offshore stress raise local volatility? Winsorise returns at 1%/99%, flag the top and bottom 20% of months for VIX, global EPU and Brent oil volatility, and compare each index’s volatility in those months with its full-sample volatility.
+
+```{r Q1A_strat}
+
+Winsor <- function(x) {
+  q <- quantile(x, c(0.01, 0.99), na.rm = TRUE)
+  pmin(pmax(x, q[1]), q[2])
+}
+
+Idxs <-
+  Vol_Rets %>%
+  group_by(Name) %>%
+  mutate(Return = Winsor(Return)) %>%
+  ungroup() %>%
+  mutate(YearMonth = format(date, "%Y%m"))
+
+# Monthly stress drivers
+VIX_M <- Implied_Vol %>% filter(Name == "VIX", date >= StartDate) %>%
+  mutate(YearMonth = format(date, "%Y%m")) %>%
+  group_by(YearMonth) %>% summarise(Level = mean(TRI))
+
+EPU_M <- Uncertainty_Indexes %>% filter(Name == "EPUCGLCP", date >= StartDate) %>%
+  mutate(YearMonth = format(date, "%Y%m")) %>%
+  group_by(YearMonth) %>% summarise(Level = last(TRI))
+
+Oil_M <- Commods %>% filter(Name == "Oil_Brent", date >= StartDate) %>%
+  arrange(date) %>%
+  mutate(Ret = TRI / lag(TRI) - 1, YearMonth = format(date, "%Y%m")) %>%
+  group_by(YearMonth) %>% summarise(Level = sd(Ret, na.rm = TRUE) * sqrt(252))
+
+Top_Q <- function(df) df %>% filter(Level > quantile(Level, 0.8)) %>% pull(YearMonth)
+Bot_Q <- function(df) df %>% filter(Level < quantile(Level, 0.2)) %>% pull(YearMonth)
+
+Strat <-
+  bind_rows(
+    Perf_comparisons(Idxs, Top_Q(VIX_M), "High VIX"),
+    Perf_comparisons(Idxs, Bot_Q(VIX_M), "Low VIX"),
+    Perf_comparisons(Idxs, Top_Q(EPU_M), "High Global EPU"),
+    Perf_comparisons(Idxs, Bot_Q(EPU_M), "Low Global EPU"),
+    Perf_comparisons(Idxs, Top_Q(Oil_M), "High Oil Vol"),
+    Perf_comparisons(Idxs, Bot_Q(Oil_M), "Low Oil Vol"))
+
+Strat %>% select(Name, Period, Ratio) %>% mutate(Ratio = round(Ratio, 2)) %>% spread(Name, Ratio)
+
+```
+
+
+
+
+
 ## Part B
+
+Load and clean the data. Holdings, factor scores, index constituents and daily stock returns, with the cleaning decisions listed at the top.
+
+```{r Q1B_data}
+fmxdat::source_all("Questions/Question1/code")   # picks up the three new functions
+
+SafeCore <- read_rds("data/SafeCore.rds")
+Factor_Scores <- read_rds("data/Factor_Scores.rds")
+Local_Index_Constituents <- read_rds("data/Index_Constituents.rds")
+Stock_Rets <- read_rds("data/Stock_Returns_Daily.rds") %>% select(date, Tickers, Return = Returns)
+
+# Data errors: daily moves beyond +-50% set to NA (238 observations)
+sum(abs(Stock_Rets$Return) > 0.5)
+Stock_Rets <- Stock_Rets %>% mutate(Return = ifelse(abs(Return) > 0.5, NA, Return))
+
+# SafeCore: fill missing sectors (Index_Constituents lists PAN and VAL as Resources) and rescale weights to 100%
+SafeCore <-
+  SafeCore %>%
+  mutate(Sector = ifelse(is.na(Sector) & Tickers %in% c("PAN", "VAL"), "Resources", Sector)) %>%
+  group_by(date) %>% mutate(Weight = Weight / sum(Weight)) %>% ungroup()
+```
+
+SafeCore’s returns and volatility vs the benchmark and a low-volatility alternative.
+
+```{r Q1B_returns}
+SC_Wts <- SafeCore %>% filter(date >= ymd(20141231))       # stock returns start 2015
+SC_Tickers <- sort(unique(SC_Wts$Tickers))
+
+W_xts <- SC_Wts %>% select(date, Tickers, Weight) %>% tbl_xts(cols_to_xts = Weight, spread_by = Tickers)
+W_xts[is.na(W_xts)] <- 0
+
+R_xts <- Stock_Rets %>% filter(Tickers %in% SC_Tickers) %>% tbl_xts(cols_to_xts = Return, spread_by = Tickers)
+R_xts[is.na(R_xts)] <- 0
+R_xts <- R_xts[, colnames(W_xts)]
+if (!all(colnames(R_xts) == colnames(W_xts))) stop("Weight and return columns do not line up")
+
+SC_Port <- rmsfuns::Safe_Return.portfolio(R = R_xts, weights = W_xts, lag_weights = TRUE,
+                                          contribution = TRUE, verbose = TRUE, value = 1, geometric = TRUE)
+
+SC_Daily <- SC_Port$returns %>% xts_tbl() %>% setNames(c("date", "Return")) %>%
+  mutate(date = as.Date(date), Name = "SafeCore")
+
+# Strategy indexes rebuilt from constituents (also backfills Low Vol to Aug 2020)
+Strat_Idx <- Index_From_Constituents(Local_Index_Constituents, c("Capped SWIX", "LowVol", "Momentum", "Quality", "Value"))
+
+# Validate the rebuild against the official Low Vol index (2024 onwards)
+Strat_Idx %>% filter(Name == "LowVol") %>% select(date, LowVol_Rebuilt = Return) %>%
+  inner_join(Idx_Daily %>% filter(Tickers == "STXLVLJ433") %>% select(date, Lvl = Returns), by = "date") %>%
+  summarise(Correlation = cor(Lvl, LowVol_Rebuilt), TE = sd(Lvl - LowVol_Rebuilt) * sqrt(252))
+
+Compare_Rets <-
+  bind_rows(SC_Daily,
+            Idx_Daily %>% filter(Tickers == "J433") %>% select(date, Return = Returns) %>% mutate(Name = "Capped_SWIX"),
+            Strat_Idx %>% filter(Name == "LowVol") %>% mutate(Name = "LowVol_Rebuilt")) %>%
+  filter(date >= ymd(20150101))
+
+Vol_Table(Compare_Rets) %>% mutate(across(-Year, ~ round(. * 100, 1)))
+Roll_Vol_Plot(Compare_Rets, Width = 63, Title = "SafeCore vs benchmark: rolling 3-month volatility")
+```
+
+
+Risk profile and behaviour in stressed periods.
+
+```{r Q1B_risk}
+# Since Sep 2020 (common sample with the Low Vol index)
+Compare_xts <- Compare_Rets %>% filter(date >= ymd(20200901)) %>% tbl_xts(cols_to_xts = Return, spread_by = Name)
+
+table.AnnualizedReturns(Compare_xts, scale = 252) %>% round(3)
+rbind(VaR(Compare_xts, p = 0.95, method = "historical"), VaR(Compare_xts, p = 0.95, method = "modified"),
+      ES(Compare_xts,  p = 0.95, method = "historical"), ES(Compare_xts,  p = 0.95, method = "modified"),
+      maxDrawdown(Compare_xts)) %>% round(4)
+
+# Full sample vs benchmark
+Full_xts <- Compare_Rets %>% filter(Name != "LowVol_Rebuilt") %>% tbl_xts(cols_to_xts = Return, spread_by = Name)
+Ra <- Full_xts[, "SafeCore"]; Rb <- Full_xts[, "Capped_SWIX"]
+
+Monthly <-
+  Compare_Rets %>% filter(Name != "LowVol_Rebuilt") %>%
+  mutate(YM = format(date, "%Y%m")) %>%
+  group_by(Name, YM) %>% summarise(date = last(date), Return = prod(1 + Return) - 1, .groups = "drop") %>%
+  select(-YM) %>% tbl_xts(cols_to_xts = Return, spread_by = Name)
+
+c(Beta        = CAPM.beta(Ra, Rb),
+  UpCapture   = UpDownRatios(Monthly[, "SafeCore"], Monthly[, "Capped_SWIX"], method = "Capture", side = "Up"),
+  DownCapture = UpDownRatios(Monthly[, "SafeCore"], Monthly[, "Capped_SWIX"], method = "Capture", side = "Down"),
+  TE          = TrackingError(Ra, Rb, scale = 252))
+table.AnnualizedReturns(Full_xts, scale = 252) %>% round(3)
+maxDrawdown(Full_xts)
+
+chart.RollingRegression(Ra, Rb, width = 252, attribute = "Beta",
+                        main = "SafeCore: rolling 1-year beta to the Capped SWIX")
+
+# Stratification: high-VIX months (VIX_M, Top_Q, Winsor from Part A)
+SC_Idxs <-
+  Compare_Rets %>% filter(Name != "LowVol_Rebuilt") %>%
+  group_by(Name) %>% mutate(Return = Winsor(Return)) %>% ungroup() %>%
+  mutate(YearMonth = format(date, "%Y%m"))
+
+Perf_comparisons(SC_Idxs, Top_Q(VIX_M), "High VIX")
+SC_Idxs %>% filter(YearMonth %in% Top_Q(VIX_M)) %>% group_by(Name) %>%
+  summarise(Ann_Return_in_High_VIX = mean(Return) * 252)
+```
+
+Where SafeCore’s risk comes from.
+
+```{r Q1B_sources, fig.width = 10, fig.height = 5}
+Reb_Dates <- SC_Wts %>% distinct(date) %>%
+  filter(format(date, "%m") == "12" | date == max(date)) %>%
+  filter(date >= ymd(20151231)) %>% pull(date)
+
+RC <- map_df(Reb_Dates, ~ Risk_Contribution(.x, SC_Wts, Stock_Rets))
+
+RC_Sector <- RC %>% group_by(date, Sector) %>%
+  summarise(Weight = sum(Weight), Risk_Share = sum(Risk_Share), .groups = "drop")
+
+RC_Sector %>% mutate(across(c(Weight, Risk_Share), ~ round(. * 100, 1)))
+RC %>% distinct(date, Port_SD)
+RC %>% filter(date == max(date)) %>% arrange(desc(Risk_Share)) %>% head(10)
+
+g_rc <-
+  RC_Sector %>% gather(Measure, Value, Weight, Risk_Share) %>%
+  ggplot() +
+  geom_col(aes(factor(format(date, "%Y")), Value, fill = Sector), position = "stack") +
+  facet_wrap(~Measure) +
+  labs(title = "SafeCore: sector weight vs share of portfolio risk", x = "", y = "") +
+  fmxdat::theme_fmx()
+
+fmxdat::finplot(g_rc, y.pct = TRUE)
+```
+
+
+Factor scores: your own vs the third party’s, and SafeCore’s tilts.
+
+```{r Q1B_factors, fig.width = 10, fig.height = 6}
+Own_Scores <- Own_Factor_Scores(Stock_Rets %>% filter(!is.na(Return), date >= ymd(20190101)))
+
+TP_Scores <- Factor_Scores %>% mutate(YM = format(date, "%Y%m")) %>%
+  select(YM, Tickers, Factor, Factor_Value) %>% spread(Factor, Factor_Value)
+
+Scores <- inner_join(TP_Scores, Own_Scores, by = c("YM", "Tickers"))
+
+# Do my scores rank stocks like the third party's? (monthly Spearman rank correlation)
+Score_Cors <-
+  Scores %>% group_by(YM) %>%
+  summarise(Mom = cor(Own_Momentum, Momentum, method = "spearman", use = "complete.obs"),
+            LowVol_vs_VolSens = cor(Own_LowVol, `Volatility Sensitivity`, method = "spearman", use = "complete.obs"),
+            .groups = "drop")
+summary(Score_Cors)
+
+# Weighted factor exposures: SafeCore vs benchmark vs strategy indexes
+Month_End_Wts <-
+  Local_Index_Constituents %>%
+  filter(Index %in% c("Capped SWIX", "LowVol", "Momentum", "Quality", "Value")) %>%
+  mutate(YM = format(date, "%Y%m")) %>%
+  group_by(Index, YM) %>% filter(date == max(date)) %>%
+  mutate(Weight = weight / sum(weight)) %>% ungroup() %>%
+  select(Portfolio = Index, YM, Tickers, Weight)
+
+All_Wts <- bind_rows(Month_End_Wts,
+                     SafeCore %>% mutate(YM = format(date, "%Y%m"), Portfolio = "SafeCore") %>%
+                       select(Portfolio, YM, Tickers, Weight))
+
+Exposures <-
+  All_Wts %>% inner_join(Scores, by = c("YM", "Tickers")) %>%
+  gather(Factor, Score, -Portfolio, -YM, -Tickers, -Weight) %>%
+  group_by(Portfolio, YM, Factor) %>%
+  summarise(Exposure = sum(Weight * Score, na.rm = TRUE) / sum(Weight[!is.na(Score)]), .groups = "drop")
+
+# Composite table: average exposure per strategy
+Exposures %>% group_by(Portfolio, Factor) %>%
+  summarise(Exposure = round(mean(Exposure), 2), .groups = "drop") %>% spread(Portfolio, Exposure)
+
+# SafeCore's active exposure over time
+Active <-
+  Exposures %>% spread(Portfolio, Exposure) %>%
+  mutate(Active = SafeCore - `Capped SWIX`, date = ymd(paste0(YM, "01"))) %>%
+  filter(!is.na(Active))
+
+g_active <-
+  Active %>%
+  ggplot() +
+  geom_line(aes(date, Active, color = Factor), linewidth = 0.8) +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~Factor) +
+  labs(title = "SafeCore active factor exposure vs Capped SWIX", x = "", y = "Active score") +
+  fmxdat::theme_fmx() + theme(legend.position = "none")
+
+fmxdat::finplot(g_active, x.date.type = "%y", x.date.dist = "1 year")
+
+Active %>% group_by(Factor) %>% summarise(Mean = round(mean(Active), 2), Latest = round(last(Active), 2))
+```
+
+
+
 
 ## Part C
 
+Market dispersion over time. Capped SWIX constituents from August 2020, with faulty returns removed. Daily weighted and unweighted CSV, smoothed with a 3-month rolling average.
+
+```{r Q1C_csv}
+fmxdat::source_all("Questions/Question1/code")
+
+SWIX_Cons <- Local_Index_Constituents %>% filter(Index == "Capped SWIX")
+sum(abs(SWIX_Cons$Return) > 0.5)                                         # 6 data errors
+SWIX_Cons <- SWIX_Cons %>% mutate(Return = ifelse(abs(Return) > 0.5, NA, Return))
+
+Active_Managers <- read_rds("data/Active_Managers.rds")
+
+CSV <- CSV_Calc(SWIX_Cons)
+
+CSV_Plot <-
+  CSV %>% gather(Type, CSV, -date) %>%
+  group_by(Type) %>% arrange(date) %>%
+  mutate(CSV_Smooth = RcppRoll::roll_mean(CSV, n = 63, fill = NA, align = "right")) %>%
+  ungroup() %>% filter(!is.na(CSV_Smooth))
+
+g_csv <-
+  CSV_Plot %>% ggplot() +
+  geom_line(aes(date, CSV_Smooth, color = Type), linewidth = 0.9) +
+  labs(title = "Capped SWIX cross-sectional volatility (dispersion)",
+       subtitle = "Daily CSV, 3-month rolling average", x = "", y = "Daily CSV") +
+  fmxdat::theme_fmx()
+
+fmxdat::finplot(g_csv, y.pct = TRUE, y.pct_acc = 0.1, x.date.type = "%Y", x.date.dist = "1 year")
+
+CSV %>% mutate(Year = format(date, "%Y")) %>% group_by(Year) %>%
+  summarise(across(c(Weighted, Unweighted), ~ round(mean(.) * 100, 2)))
+```
+
+
+Rolling correlations and peer dispersion, plotted together
+
+```{r Q1C_cor, fig.height = 7}
+Month_Ends <-
+  SWIX_Cons %>% mutate(YM = format(date, "%Y%m")) %>%
+  group_by(YM) %>% filter(date == max(date)) %>% ungroup() %>%
+  distinct(date) %>% filter(date >= ymd(20201130)) %>% pull(date)      # need 63 days of history first
+
+Roll_Cor <- map_df(Month_Ends, ~ Avg_Pairwise_Cor(.x, SWIX_Cons, N = 40, LookBack = 63))
+
+Peer_Disp <-
+  Active_Managers %>% filter(date >= ymd(20200901)) %>%
+  group_by(date) %>% summarise(Peer_Dispersion = sd(Returns, na.rm = TRUE), .groups = "drop")
+
+Measures <-
+  bind_rows(
+    CSV %>% mutate(YearMonth = format(date, "%Y%m")) %>% group_by(YearMonth) %>%
+      summarise(Value = mean(Weighted)) %>% mutate(Measure = "Weighted CSV"),
+    Roll_Cor %>% mutate(YearMonth = format(date, "%Y%m"), Measure = "Avg Correlation (Top 40)") %>%
+      select(YearMonth, Value = Avg_Cor, Measure),
+    Peer_Disp %>% mutate(YearMonth = format(date, "%Y%m"), Measure = "Peer Fund Dispersion") %>%
+      select(YearMonth, Value = Peer_Dispersion, Measure))
+
+g_alpha <-
+  Measures %>% mutate(date = ymd(paste0(YearMonth, "01"))) %>%
+  ggplot() +
+  geom_line(aes(date, Value, color = Measure), linewidth = 0.9) +
+  facet_wrap(~Measure, scales = "free_y", ncol = 1) +
+  labs(title = "Alpha opportunity since 2020", x = "", y = "") +
+  fmxdat::theme_fmx() + theme(legend.position = "none")
+
+fmxdat::finplot(g_alpha, x.date.type = "%Y", x.date.dist = "1 year")
+
+Roll_Cor %>% mutate(Year = format(date, "%Y")) %>% group_by(Year) %>% summarise(Avg_Cor = round(mean(Avg_Cor), 3))
+```
+
+
+Alpha opportunity across macro regimes
+
+```{r Q1C_macro}
+Monthly_Driver <- function(df, Nm, FUN = mean) {
+  df %>% filter(Name == Nm, date >= ymd(20200901)) %>%
+    mutate(YearMonth = format(date, "%Y%m")) %>%
+    group_by(YearMonth) %>% summarise(Level = FUN(TRI))
+}
+
+Drivers <- list(
+  VIX                 = Monthly_Driver(Implied_Vol, "VIX"),
+  `Global EPU`        = Monthly_Driver(Uncertainty_Indexes, "EPUCGLCP", last),
+  `MOVE (bond vol)`   = Monthly_Driver(Uncertainty_Indexes, "MOVE_Index"),
+  `ZAR vol (SAVIUSD)` = Local_Cncy_Vol_Index %>% mutate(Name = "SAVIUSD") %>% Monthly_Driver("SAVIUSD"),
+  `Oil vol`           = Commods %>% filter(Name == "Oil_Brent", date >= ymd(20200801)) %>% arrange(date) %>%
+                          mutate(Ret = TRI / lag(TRI) - 1, YearMonth = format(date, "%Y%m")) %>%
+                          filter(date >= ymd(20200901)) %>% group_by(YearMonth) %>%
+                          summarise(Level = sd(Ret, na.rm = TRUE) * sqrt(252)))
+
+# Stratification: measure in high / low regime relative to its average
+Strat_C <- map2_df(Drivers, names(Drivers), ~ Regime_Means(Measures, .x, .y))
+Strat_C %>% mutate(across(c(High, Low), ~ round(., 2))) %>% arrange(Measure)
+
+# Supporting evidence: monthly correlations
+map2_df(Drivers, names(Drivers), ~
+          Measures %>% left_join(.x, by = "YearMonth") %>%
+          group_by(Measure) %>% summarise(Cor = cor(Value, Level, use = "complete.obs")) %>%
+          mutate(Driver = .y)) %>%
+  spread(Driver, Cor) %>% mutate(across(-Measure, ~ round(., 2)))
+```
+
+
+DCC correlations between super-sectors, following the Topic 6 slide.
+
+```{r Q1C_dcc}
+pacman::p_load(rmgarch)
+
+Sector_Rets <-
+  SWIX_Cons %>% filter(!is.na(Return)) %>%
+  group_by(date, SuperSector) %>%
+  summarise(Return = sum(weight * Return) / sum(weight), .groups = "drop") %>%
+  group_by(SuperSector) %>%
+  mutate(dlogret = log(1 + Return), scaledret = dlogret - mean(dlogret)) %>% ungroup()
+
+Sector_xts <- Sector_Rets %>% tbl_xts(cols_to_xts = scaledret, spread_by = SuperSector)  # Financials, Industrials, Resources
+
+garch11.spec <- ugarchspec(mean.model = list(armaOrder = c(0, 0)),
+                           variance.model = list(garchOrder = c(1, 1), model = "sGARCH"),
+                           distribution.model = "norm")
+
+dcc.garch11.spec <- dccspec(uspec = multispec(replicate(3, garch11.spec)),
+                            dccOrder = c(1, 1), distribution = "mvnorm")
+
+dcc.fit <- dccfit(dcc.garch11.spec, data = Sector_xts)
+
+Rhot <- rcor(dcc.fit)                       # 3 x 3 x T array
+DCC_Cors <- tibble(date = as.Date(index(Sector_xts)),
+                   `Financials-Industrials` = Rhot[1, 2, ],
+                   `Financials-Resources`   = Rhot[1, 3, ],
+                   `Industrials-Resources`  = Rhot[2, 3, ])
+
+g_dcc <-
+  DCC_Cors %>% gather(Pair, Rho, -date) %>%
+  ggplot() + geom_line(aes(date, Rho, color = Pair), linewidth = 0.8) +
+  labs(title = "DCC-GARCH(1,1) conditional correlations between super-sectors", x = "", y = "Correlation") +
+  fmxdat::theme_fmx()
+
+fmxdat::finplot(g_dcc)
+
+```
+
+
+```{r Q1d_dcc_results_not_produced}
+MTS::MarchTest(Sector_xts)
+dcc.fit@mfit$matcoef[c("[Joint]dcca1", "[Joint]dccb1"), ]
+
+```
+
+
+
 # Question 2: Mid, Small and Large Cap Indices
+
+Load and prepare the data. Monthly size-index weights, daily stock returns (faulty moves above ±50% removed), sectors filled in, weights rescaled to 100%.
+
+
+```{r Q2_data}
+fmxdat::source_all("Questions/Question2/code")
+pacman::p_load(rugarch)
+
+Size_Idx <- read_rds("data/Monthly_Index_Constituents.rds")
+Stock_Rets <- read_rds("data/Stock_Returns_Daily.rds") %>%
+  select(date, Tickers, Return = Returns) %>%
+  mutate(Return = ifelse(abs(Return) > 0.5, NA, Return))
+Idx_Daily <- read_rds("data/Index_Returns_Daily.rds")
+Local_Index_Constituents <- read_rds("data/Index_Constituents.rds")
+SafeCore <- read_rds("data/SafeCore.rds")
+Hedge <- read_rds("data/Currency_Hedge_Plays.rds")
+Implied_Vol <- read_rds("data/Implied_Vol_Indexes.rds")
+Local_Cncy_Vol_Index <- read_rds("data/LCL_Currency_Vol_Index.rds") %>%
+  mutate(TRI = ifelse(TRI < 1, TRI * 100, TRI))
+
+Size_Idx <-
+  Fill_Sectors(Size_Idx, Local_Index_Constituents, SafeCore) %>%
+  group_by(Fund, date) %>% mutate(Weight = Weight / sum(Weight)) %>% ungroup() %>%
+  mutate(Fund = recode(Fund, CappedSWIX = "Capped SWIX", LargeCaps = "Large Caps",
+                       MidCaps = "Mid Caps", SmallCaps = "Small Caps"))
+
+# How much weight is still unclassified (average per month since 2015)?
+Size_Idx %>% filter(date >= ymd(20150101)) %>% group_by(Fund) %>%
+  summarise(Unclassified = sum(Weight[Sector == "Unclassified"]) / n_distinct(date))
+```
+
+Index returns and their risk–return profile. Rebuilt from constituents, checked against the official indexes, then summarised from 2015.
+
+```{r Q2_returns}
+StartDate <- ymd(20141231)
+Size_Rets <- Size_Index_Returns(Size_Idx, Stock_Rets, StartDate)
+
+# Validate against official indexes: J433 Capped SWIX, J200 Top 40, J201 Mid, J202 Small
+Size_Rets %>% spread(Name, Return) %>%
+  inner_join(Idx_Daily %>% filter(Tickers %in% c("J433", "J200", "J201", "J202")) %>%
+               select(date, Tickers, Returns) %>% spread(Tickers, Returns), by = "date") %>%
+  na.omit() %>%
+  summarise(SWIX = cor(`Capped SWIX`, J433), Large = cor(`Large Caps`, J200),
+            Mid = cor(`Mid Caps`, J201), Small = cor(`Small Caps`, J202))
+
+Size_xts <- Size_Rets %>% mutate(Name = gsub(" ", "_", Name)) %>%
+  tbl_xts(cols_to_xts = Return, spread_by = Name)
+
+table.AnnualizedReturns(Size_xts, scale = 252) %>% round(3)
+rbind(VaR(Size_xts, p = 0.95, method = "historical"),
+      ES(Size_xts, p = 0.95, method = "modified"),
+      maxDrawdown(Size_xts)) %>% round(4)
+
+g_cum <-
+  Size_Rets %>% group_by(Name) %>% arrange(date) %>% mutate(Cum = cumprod(1 + Return)) %>% ungroup() %>%
+  ggplot() + geom_line(aes(date, Cum, color = Name), linewidth = 0.8) +
+  labs(title = "Cumulative returns of the size indexes", x = "", y = "Growth of R1") +
+  fmxdat::theme_fmx()
+fmxdat::finplot(g_cum)
+```
+
+
+Sector exposure and rand exposure.
+
+```{r Q2_sectors, fig.width = 10, fig.height = 6}
+Sector_Exp <- Size_Idx %>% group_by(Fund, date, Sector) %>%
+  summarise(Weight = sum(Weight), .groups = "drop")
+
+Sector_Exp %>% filter(date %in% c(ymd(20151231), ymd(20200131), ymd(20260831))) %>%
+  mutate(Weight = round(Weight * 100, 1)) %>% spread(Sector, Weight) %>% arrange(Fund)
+
+g_sec <-
+  Sector_Exp %>% filter(date >= ymd(20150101)) %>%
+  ggplot() + geom_area(aes(date, Weight, fill = Sector), position = "stack") +
+  facet_wrap(~Fund) +
+  labs(title = "Sector exposure of the size indexes", x = "", y = "") +
+  fmxdat::theme_fmx()
+fmxdat::finplot(g_sec, y.pct = TRUE, x.date.type = "%y", x.date.dist = "2 years")
+
+# Rand exposure at the latest date (% of index weight)
+Size_Idx %>% filter(date == max(date)) %>%
+  left_join(Hedge %>% select(Tickers, hedge), by = "Tickers") %>%
+  mutate(hedge = ifelse(is.na(hedge) | hedge == "", "Not classified", hedge)) %>%
+  group_by(Fund, hedge) %>% summarise(Weight = round(sum(Weight) * 100, 1), .groups = "drop") %>%
+  spread(hedge, Weight)
+```
+
+Stock concentration.
+
+```{r Q2_concentration}
+Conc <- Concentration(Size_Idx)
+
+Conc %>% filter(date %in% c(ymd(20151231), ymd(20200131), ymd(20260831))) %>%
+  mutate(across(c(Top10, HHI), ~ round(., 3)), Eff_N = round(Eff_N, 1)) %>% arrange(Fund)
+
+g_conc <-
+  Conc %>% filter(date >= ymd(20150101)) %>%
+  ggplot() + geom_line(aes(date, Eff_N, color = Fund), linewidth = 0.8) +
+  labs(title = "Effective number of stocks (1 / HHI)", x = "", y = "") +
+  fmxdat::theme_fmx()
+fmxdat::finplot(g_conc)
+```
+
+
+Realised volatility: indexes, constituents and GARCH
+
+```{r Q2_vol}
+Vol_Table(Size_Rets) %>% mutate(across(-Year, ~ round(. * 100, 1)))
+Roll_Vol_Plot(Size_Rets, Width = 63, Title = "Rolling 3-month realised volatility")
+
+# Constituent volatility vs index volatility each December (trailing year)
+Dec_Dates <- Size_Idx %>% distinct(date) %>%
+  filter(date >= ymd(20151231), format(date, "%m") == "12" | date == max(date)) %>% pull(date)
+CV <- map_df(Dec_Dates, ~ Constituent_Vol(.x, Size_Idx, Stock_Rets, Size_Rets))
+CV %>% mutate(across(where(is.numeric), ~ round(., 3)))
+
+# GJR-GARCH(1,1) per index
+xts_G <- Size_Rets %>% mutate(Name = gsub(" ", "_", Name)) %>%
+  group_by(Name) %>% mutate(scaledret = log(1 + Return) - mean(log(1 + Return))) %>% ungroup() %>%
+  tbl_xts(cols_to_xts = scaledret, spread_by = Name)
+
+GARCH_Coefs <- list()
+Sig <- map_df(colnames(xts_G), function(nm) {
+  fit <- GARCH_Fit(na.omit(xts_G[, nm]))
+  GARCH_Coefs[[nm]] <<- c(coef(fit)[c("alpha1", "beta1", "gamma1")], Persistence = persistence(fit))
+  GARCH_Sigma(fit, gsub("_", " ", nm))
+})
+do.call(rbind, GARCH_Coefs) %>% round(3)
+
+g_sig <- Sig %>% ggplot() + geom_line(aes(date, Sigma, color = Name), linewidth = 0.6, alpha = 0.8) +
+  labs(title = "GJR-GARCH(1,1) conditional volatility", x = "", y = "Annualised sigma") + fmxdat::theme_fmx()
+fmxdat::finplot(g_sig, y.pct = TRUE)
+```
+
+
+Rolling 3-year returns.
+
+```{r Q2_rollret}
+RR <- Roll_Returns(Size_Rets, Years = 3)
+
+RR %>% group_by(Name) %>%
+  summarise(Min = min(RollRet), Median = median(RollRet), Max = max(RollRet), Latest = dplyr::last(RollRet))
+
+# Share of days each size index beat the Capped SWIX over 3 years
+RR %>% select(date, Name, RollRet) %>% spread(Name, RollRet) %>%
+  summarise(across(c(`Large Caps`, `Mid Caps`, `Small Caps`), ~ mean(. > `Capped SWIX`)))
+
+g_rr <- RR %>% ggplot() + geom_line(aes(date, RollRet, color = Name), linewidth = 0.8) +
+  geom_hline(yintercept = 0) +
+  labs(title = "Rolling 3-year annualised returns", x = "", y = "") + fmxdat::theme_fmx()
+fmxdat::finplot(g_rr, y.pct = TRUE)
+```
+
+
+Active share relative to the Capped SWIX.
+
+```{r Q2_activeshare}
+AS <- Active_Share(Size_Idx, Bench = "Capped SWIX")
+
+AS %>% filter(date >= ymd(20150101)) %>% group_by(Fund) %>%
+  summarise(Mean = mean(Active_Share), Min = min(Active_Share), Max = max(Active_Share),
+            Latest = dplyr::last(Active_Share))
+
+g_as <- AS %>% filter(date >= ymd(20150101)) %>%
+  ggplot() + geom_line(aes(date, Active_Share, color = Fund), linewidth = 0.8) +
+  labs(title = "Active share relative to the Capped SWIX", x = "", y = "") + fmxdat::theme_fmx()
+fmxdat::finplot(g_as, y.pct = TRUE)
+```
+
+
+Stratification: how the size indexes behave in stressed regimes.
+
+```{r Q2_strat}
+Winsor <- function(x) { q <- quantile(x, c(0.01, 0.99), na.rm = TRUE); pmin(pmax(x, q[1]), q[2]) }
+
+Idxs <- Size_Rets %>% group_by(Name) %>% mutate(Return = Winsor(Return)) %>% ungroup() %>%
+  mutate(YearMonth = format(date, "%Y%m"))
+
+Monthly_Lvl <- function(df, Nm) df %>% filter(Name == Nm, date >= ymd(20150101)) %>%
+  mutate(YearMonth = format(date, "%Y%m")) %>% group_by(YearMonth) %>% summarise(Level = mean(TRI))
+
+ZAR_M <- Local_Cncy_Vol_Index %>% mutate(Name = "SAVIUSD") %>% Monthly_Lvl("SAVIUSD")
+VIX_M <- Monthly_Lvl(Implied_Vol, "VIX")
+SWIXVol_M <- Size_Rets %>% filter(Name == "Capped SWIX") %>% mutate(YearMonth = format(date, "%Y%m")) %>%
+  group_by(YearMonth) %>% summarise(Level = sd(Return) * sqrt(252))
+
+Top_Q <- function(df) df %>% filter(Level > quantile(Level, 0.8)) %>% pull(YearMonth)
+Bot_Q <- function(df) df %>% filter(Level < quantile(Level, 0.2)) %>% pull(YearMonth)
+
+Strat <- bind_rows(
+  Strat_Perf(Idxs, Top_Q(ZAR_M), "High ZAR vol"),       Strat_Perf(Idxs, Bot_Q(ZAR_M), "Low ZAR vol"),
+  Strat_Perf(Idxs, Top_Q(VIX_M), "High VIX"),           Strat_Perf(Idxs, Bot_Q(VIX_M), "Low VIX"),
+  Strat_Perf(Idxs, Top_Q(SWIXVol_M), "High local vol"), Strat_Perf(Idxs, Bot_Q(SWIXVol_M), "Low local vol"))
+
+Strat %>% select(Period, Name, Ret, SD_Ratio) %>%
+  mutate(Ret = round(Ret * 100, 1), SD_Ratio = round(SD_Ratio, 2)) %>%
+  gather(Stat, Value, Ret, SD_Ratio) %>% unite(Col, Name, Stat) %>% spread(Col, Value)
+```
+
+
+
 
 # Question 3: Portfolio Return Comparison
 
 # Question 4: Portfolio Construction
+

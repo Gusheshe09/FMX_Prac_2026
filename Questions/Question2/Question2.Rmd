@@ -1,52 +1,29 @@
 ---
-# IMPORTANT: Change settings here, but DO NOT change the spacing AT ALL.
+# IMPORTANT: Change settings here, but DO NOT change the spacing.
 # Remove comments and add values where applicable.
 # The descriptions below should be self-explanatory
 
-title: "Helping You Write Academic Papers in R using Texevier"
+title: "Size Matters, but Not How You Think: Risk and Return in South Africa's Large, Mid and Small Cap Indexes"
 #subtitle: "This will appear as Right Header"
 
 documentclass: "elsarticle"
 
 # --------- Thesis title (Optional - set to FALSE by default).
-# You can move the details below around as you please.
 Thesis_FP: FALSE
-# Entry1: "An unbelievable study with a title spanning multiple lines."
-# Entry2: "\\textbf{Some Guy}" # textbf for bold
-# Entry3: "A thesis submitted toward the degree of Doctor of Philosophy"
-# Uni_Logo: Tex/Logo.png # Place a logo in the indicated location (from your root, e.g. defaults to ~/Tex/Logo.png) and uncomment this line. Leave uncommented for no image
-# Logo_width: 0.3 # If using a logo - use this to set width (size) of image
-# Entry4: "Under the supervision of: \\vfill Prof. Joe Smith and Dr. Frank Smith"
-# Entry5: "Stellenbosch University"
-# Entry6: April 2020
-# Entry7:
-# Entry8:
 
 # --------- Front Page
-# Comment: ----- Follow this pattern for up to 5 authors
 AddTitle: TRUE # Use FALSE when submitting to peer reviewed platform. This will remove author names.
-Author1: "Jane Doe^[__Contributions:__  \\newline _The authors would like to thank no institution for money donated to this project. Thank you sincerely._]"  # First Author - note the thanks message displayed as an italic footnote of first page.
-Ref1: "Some Institution, Cape Town, South Africa" # First Author's Affiliation
-Email1: "nfkatzke\\@gmail.com" # First Author's Email address
-
-Author2: "John Smith"
-Ref2: "Some other Institution, Cape Town, South Africa"
-Email2: "John\\@gmail.com"
-CommonAffiliation_12: TRUE # If Author 1 and 2 have a common affiliation. Works with _13, _23, etc.
-
-Author3: "John Doe"
-Email3: "Joe\\@gmail.com"
+Author1: "Kieron Maseko (26572982)"  # First Author
+Ref1: "Stellenbosch University, Stellenbosch, South Africa" # First Author's Affiliation
+Email1: "26572982\\@sun.ac.za" # First Author's Email address
 
 CorrespAuthor_1: TRUE  # If corresponding author is author 3, e.g., use CorrespAuthor_3: TRUE
 
 # Comment out below to remove both. JEL Codes only given if keywords also given.
-keywords: "Multivariate GARCH \\sep Kalman Filter \\sep Copula" # Use \\sep to separate
-JELCodes: "L250 \\sep L100"
+keywords: "Size Indexes \\sep Concentration \\sep Active Share \\sep Realised Volatility \\sep Stratification" # Use \\sep to separate
+JELCodes: "G11 \\sep G12"
 
 # ----- Manage headers and footers:
-#BottomLFooter: $Title$
-#BottomCFooter:
-#TopLHeader: \leftmark # Adds section name at topleft. Remove comment to add it.
 BottomRFooter: "\\footnotesize Page \\thepage" # Add a '#' before this line to remove footer.
 addtoprule: TRUE
 addfootrule: TRUE               # Use if footers added. Add '#' to remove line.
@@ -55,22 +32,14 @@ addfootrule: TRUE               # Use if footers added. Add '#' to remove line.
 margin: 2.3 # Sides
 bottom: 2 # bottom
 top: 2.5 # Top
-HardSet_layout: TRUE # Hard-set the spacing of words in your document. This will stop LaTeX squashing text to fit on pages, e.g.
-# This is done by hard-setting the spacing dimensions. Set to FALSE if you want LaTeX to optimize this for your paper.
+HardSet_layout: TRUE # Hard-set the spacing of words in your document.
 
 # --------- Line numbers
 linenumbers: FALSE # Used when submitting to journal
 
 # ---------- References settings:
-# You can download cls format here: https://www.zotero.org/ - simply search for your institution. You can also edit and save cls formats here: https://editor.citationstyles.org/about/
-# Hit download, store it in Tex/ folder, and change reference below - easy.
 bibliography: Tex/ref.bib       # Do not edit: Keep this naming convention and location.
 csl: Tex/harvard-stellenbosch-university.csl # referencing format used.
-# By default, the bibliography only displays the cited references. If you want to change this, you can comment out one of the following:
-#nocite: '@*' # Add all items in bibliography, whether cited or not
-# nocite: |  # add specific references that aren't cited
-#  @grinold2000
-#  @Someoneelse2010
 
 # ---------- General:
 RemovePreprintSubmittedTo: TRUE  # Removes the 'preprint submitted to...' at bottom of titlepage
@@ -81,10 +50,6 @@ fontsize: 11pt                  # Set fontsize
 linestretch: 1.2                # Set distance between lines.
 link-citations: TRUE            # This creates dynamic links to the papers in reference list.
 
-### Adding additional latex packages:
-# header-includes:
-#    - \usepackage{colortbl} # Add additional packages here.
-
 output:
   pdf_document:
     keep_tex: TRUE
@@ -92,30 +57,270 @@ output:
     fig_width: 3.5 # Adjust default figure sizes. This can also be done in the chunks of the text.
     fig_height: 3.5
 abstract: |
-  Abstract to be written here. The abstract should not be too long and should provide the reader with a good understanding what you are writing about. Academic papers are not like novels where you keep the reader in suspense. To be effective in getting others to read your paper, be as open and concise about your findings here as possible. Ideally, upon reading your abstract, the reader should feel he / she must read your paper in entirety.
+  This brief report compares the local Large, Mid and Small Cap indexes with the Capped SWIX benchmark since 2015, using monthly constituent weights and daily stock returns. Large Caps are close to the benchmark (an active share of only 13% today), but their sector mix has swung from Industrials to Resources, leaving them highly exposed to the rand and to bad news. Small Caps hold the most volatile stocks, yet form the least volatile index in every year, because their stocks move largely independently; the price is the deepest drawdown in the sample. Mid Caps have the weakest long-run return, but they are the only index that held up in periods of local market and currency stress. Size, in other words, is mainly a bet on sectors and on the rand.
 ---
 
 <!-- First: Set your default preferences for chunk options: -->
 
-<!-- If you want a chunk's code to be printed, set echo = TRUE. message = FALSE stops R printing ugly package loading details in your final paper too. I also suggest setting warning = FALSE and checking for warnings in R, else you might find ugly warnings in your paper. -->
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 6, fig.height = 5, fig.pos="H", fig.pos = 'H')
-# Note: Include = FALSE implies the code is executed, but not printed in your pdf.
-# warning and message = FALSE implies ugly messages and warnings are removed from your pdf.
-# These should be picked up when you execute the command chunks (code sections below) in your rmd, not printed in your paper!
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 6, fig.height = 5, fig.pos = "H")
 
-# Lets load in example data, and see how this can be stored and later called from your 'data' folder.
-if(!require("tidyverse")) install.packages("tidyverse")
-library(tidyverse)
-Example_data <- Texevier::Ex_Dat
+library(rmsfuns)
+pacman::p_load(tidyverse, lubridate, tbl2xts, xts, PerformanceAnalytics, RcppRoll, fmxdat, rugarch, xtable)
 
-# Notice that as you are working in a .Rproj file (I am assuming you are) - the relative paths of your directories start at your specified root.
-# This means that when working in a .Rproj file, you never need to use getwd() - it is assumed as your base root automatically.
-write_rds(Example_data, path = "data/Example_data.rds")
-
+Print_Table <- function(df, Caption, Digits = 2, Size = "\\footnotesize") {
+  print.xtable(xtable(df, caption = Caption, digits = Digits),
+               floating = TRUE, table.placement = "H", comment = FALSE,
+               include.rownames = FALSE, caption.placement = "top", size = Size,
+               sanitize.colnames.function = identity)
+}
 ```
 
+```{r functions, include=FALSE}
+# All functions used in this report (the same functions as in the code/ folder),
+# defined here so the document knits on its own.
+
+# Annualised realised volatility per calendar year, one column per series
+# df: tidy frame with columns date, Name, Return (daily simple returns)
+Vol_Table <- function(df, Scale = 252) {
+
+  df %>%
+    mutate(Year = format(date, "%Y")) %>%
+    group_by(Year, Name) %>%
+    summarise(Vol = sd(Return, na.rm = TRUE) * sqrt(Scale), .groups = "drop") %>%
+    spread(Name, Vol)
+
+}
+
+# Rolling annualised volatility plot
+# df: tidy frame with columns date, Name, Return (daily simple returns)
+Roll_Vol_Plot <- function(df, Width = 63, Scale = 252, Title = "", Subtitle = "") {
+
+  df_plot <-
+    df %>%
+    group_by(Name) %>%
+    arrange(date) %>%
+    mutate(RollVol = RcppRoll::roll_sd(Return, n = Width, fill = NA, align = "right") * sqrt(Scale)) %>%
+    ungroup() %>%
+    filter(!is.na(RollVol))
+
+  g <-
+    df_plot %>%
+    ggplot() +
+    geom_line(aes(date, RollVol, color = Name), alpha = 0.8, linewidth = 0.8) +
+    labs(title = Title, subtitle = Subtitle, x = "", y = "Annualised volatility") +
+    fmxdat::theme_fmx(title.size = fmxdat::ggpts(30), subtitle.size = fmxdat::ggpts(25),
+                      legend.size = fmxdat::ggpts(25), axis.size = fmxdat::ggpts(25))
+
+  fmxdat::finplot(g, y.pct = TRUE, y.pct_acc = 1, x.date.type = "%Y", x.date.dist = "1 year")
+
+}
+
+# Fit an AR(1)-GARCH(1,1) to one return series and return the fit
+# Return: xts of demeaned daily log returns (one column)
+GARCH_Fit <- function(Return, Model = "gjrGARCH", Dist = "sstd") {
+
+  spec <- rugarch::ugarchspec(
+    variance.model = list(model = Model, garchOrder = c(1, 1)),
+    mean.model = list(armaOrder = c(1, 0), include.mean = TRUE),
+    distribution.model = Dist)
+
+  rugarch::ugarchfit(spec = spec, data = Return, solver = "hybrid")
+
+}
+
+# Compare the four GARCH variants used in Prac 6 on information criteria
+GARCH_Compare <- function(Return, Dist = "sstd") {
+
+  Models <- c("sGARCH", "gjrGARCH", "eGARCH", "apARCH")
+  model.list <- list()
+  for (p in seq_along(Models)) {
+    model.list[[p]] <- GARCH_Fit(Return, Model = Models[p], Dist = Dist)
+  }
+  fit.mat <- sapply(model.list, rugarch::infocriteria)
+  colnames(fit.mat) <- Models
+  rownames(fit.mat) <- rownames(rugarch::infocriteria(model.list[[1]]))
+  fit.mat
+
+}
+
+# Extract annualised conditional volatility from a fit as a tidy frame
+GARCH_Sigma <- function(Fit, Name, Scale = 252) {
+
+  rugarch::sigma(Fit) %>%
+    tbl2xts::xts_tbl() %>%
+    setNames(c("date", "Sigma")) %>%
+    mutate(date = as.Date(date), Sigma = Sigma * sqrt(Scale), Name = Name)
+
+}
+
+# Fill missing sector labels: first from the same stock's other months,
+# then from the daily index constituents and SafeCore holdings; the rest = "Unclassified"
+Fill_Sectors <- function(Size_Idx, Index_Constituents, SafeCore) {
+
+  Lookup <-
+    bind_rows(
+      Size_Idx %>% filter(!is.na(Sector)) %>% select(Tickers, Sector),
+      Index_Constituents %>% filter(SuperSector != "") %>% select(Tickers, Sector = SuperSector),
+      SafeCore %>% filter(!is.na(Sector)) %>% select(Tickers, Sector)) %>%
+    count(Tickers, Sector) %>%
+    group_by(Tickers) %>% filter(n == max(n)) %>% slice(1) %>% ungroup() %>%
+    select(Tickers, Sector_Fill = Sector)
+
+  Size_Idx %>%
+    left_join(Lookup, by = "Tickers") %>%
+    mutate(Sector = coalesce(Sector, Sector_Fill, "Unclassified")) %>%
+    select(-Sector_Fill)
+
+}
+
+# Daily returns of each size index rebuilt from monthly weights and daily stock returns
+# (Safe_Return.portfolio: month-end weights applied from the next trading day)
+Size_Index_Returns <- function(Size_Idx, Stock_Rets, StartDate) {
+
+  Funds <- unique(Size_Idx$Fund)
+  Out <- list()
+
+  for (f in Funds) {
+
+    W_xts <-
+      Size_Idx %>% filter(Fund == f, date >= StartDate) %>%
+      select(date, Tickers, Weight) %>%
+      tbl_xts(cols_to_xts = Weight, spread_by = Tickers)
+    W_xts[is.na(W_xts)] <- 0
+
+    R_xts <-
+      Stock_Rets %>% filter(Tickers %in% colnames(W_xts), date > StartDate) %>%
+      tbl_xts(cols_to_xts = Return, spread_by = Tickers)
+    R_xts[is.na(R_xts)] <- 0
+
+    W_xts <- W_xts[, colnames(R_xts)]                       # stocks without return data dropped
+    W_xts <- W_xts / rowSums(W_xts)                          # re-normalise to 100%
+
+    Port <- rmsfuns::Safe_Return.portfolio(R = R_xts, weights = W_xts, lag_weights = TRUE,
+                                           verbose = TRUE, value = 1, geometric = TRUE)
+
+    Out[[f]] <- Port$returns %>% xts_tbl() %>% setNames(c("date", "Return")) %>%
+      mutate(date = as.Date(date), Name = f)
+  }
+
+  bind_rows(Out)
+
+}
+
+# Stock concentration per index and month:
+# number of stocks, weight of the 10 largest, Herfindahl index and effective number of stocks (1 / HHI)
+Concentration <- function(Size_Idx) {
+
+  Size_Idx %>%
+    group_by(Fund, date) %>%
+    mutate(w = Weight / sum(Weight)) %>%
+    summarise(N_Stocks = n(),
+              Top10 = sum(sort(w, decreasing = TRUE)[1:min(10, n())]),
+              HHI = sum(w^2),
+              Eff_N = 1 / HHI, .groups = "drop")
+
+}
+
+# Active share of each index relative to a benchmark index, per month:
+# AS = 0.5 * sum_i | w_i(index) - w_i(benchmark) |, stocks missing from one side get weight 0
+Active_Share <- function(Size_Idx, Bench = "CappedSWIX") {
+
+  W <- Size_Idx %>% group_by(Fund, date) %>% mutate(w = Weight / sum(Weight)) %>% ungroup()
+  B <- W %>% filter(Fund == Bench) %>% select(date, Tickers, w_B = w)
+
+  W %>%
+    filter(Fund != Bench) %>%
+    select(Fund, date, Tickers, w) %>%
+    group_by(Fund) %>%
+    group_modify(~ full_join(.x, B %>% filter(date %in% .x$date), by = c("date", "Tickers"))) %>%
+    ungroup() %>%
+    mutate(w = coalesce(w, 0), w_B = coalesce(w_B, 0)) %>%
+    group_by(Fund, date) %>%
+    summarise(Active_Share = 0.5 * sum(abs(w - w_B)), .groups = "drop")
+
+}
+
+# Rolling annualised returns from daily returns (Prac 1: RcppRoll::roll_prod)
+Roll_Returns <- function(df, Years = 3, Scale = 252) {
+
+  df %>%
+    group_by(Name) %>% arrange(date) %>%
+    mutate(RollRet = RcppRoll::roll_prod(1 + Return, n = Years * Scale, fill = NA, align = "right")^(1 / Years) - 1) %>%
+    ungroup() %>%
+    filter(!is.na(RollRet))
+
+}
+
+# Stratification: annualised return and volatility of each index in the selected months,
+# against its full-sample values (Prac 2 Bonus idea, extended to returns)
+# Idxs: tidy (date, YearMonth, Name, Return) of winsorised daily returns
+Strat_Perf <- function(Idxs, YMs, Alias, Scale = 252) {
+
+  Full <- Idxs %>% group_by(Name) %>%
+    summarise(Full_Ret = mean(Return) * Scale, Full_SD = sd(Return) * sqrt(Scale), .groups = "drop")
+
+  Idxs %>% filter(YearMonth %in% YMs) %>%
+    group_by(Name) %>%
+    summarise(Ret = mean(Return) * Scale, SD = sd(Return) * sqrt(Scale), .groups = "drop") %>%
+    left_join(Full, by = "Name") %>%
+    mutate(SD_Ratio = SD / Full_SD, Period = Alias)
+
+}
+
+# Realised volatility of constituents vs the index itself at a date (trailing year):
+# weighted-average stock volatility, median stock volatility, index volatility,
+# and the diversification ratio = weighted-average stock vol / index vol
+Constituent_Vol <- function(RebDate, Size_Idx, Stock_Rets, Index_Rets, LookBack = 252) {
+
+  W <- Size_Idx %>% filter(date == RebDate) %>% group_by(Fund) %>% mutate(w = Weight / sum(Weight)) %>% ungroup()
+
+  Stock_Vol <-
+    Stock_Rets %>%
+    filter(Tickers %in% W$Tickers, date <= RebDate, date > RebDate - 2 * LookBack) %>%
+    group_by(Tickers) %>% filter(row_number() > n() - LookBack) %>%
+    summarise(Vol = sd(Return, na.rm = TRUE) * sqrt(252), N = sum(!is.na(Return)), .groups = "drop") %>%
+    filter(N > LookBack / 2)
+
+  Idx_Vol <-
+    Index_Rets %>% filter(date <= RebDate) %>%
+    group_by(Name) %>% filter(row_number() > n() - LookBack) %>%
+    summarise(Index_Vol = sd(Return) * sqrt(252), .groups = "drop")
+
+  W %>% inner_join(Stock_Vol, by = "Tickers") %>%
+    group_by(Fund) %>%
+    summarise(Wtd_Stock_Vol = sum(w * Vol) / sum(w), Median_Stock_Vol = median(Vol), .groups = "drop") %>%
+    left_join(Idx_Vol, by = c("Fund" = "Name")) %>%
+    mutate(Div_Ratio = Wtd_Stock_Vol / Index_Vol, date = RebDate)
+
+}
+```
+
+```{r data_prep, include=FALSE}
+# Data (this question folder holds its own copy in data/)
+Size_Idx <- read_rds("data/Monthly_Index_Constituents.rds")
+Stock_Rets <- read_rds("data/Stock_Returns_Daily.rds") %>%
+  select(date, Tickers, Return = Returns) %>%
+  mutate(Return = ifelse(abs(Return) > 0.5, NA, Return))            # data errors
+Idx_Daily <- read_rds("data/Index_Returns_Daily.rds")
+Local_Index_Constituents <- read_rds("data/Index_Constituents.rds")
+SafeCore <- read_rds("data/SafeCore.rds")
+Hedge <- read_rds("data/Currency_Hedge_Plays.rds")
+Implied_Vol <- read_rds("data/Implied_Vol_Indexes.rds")
+Local_Cncy_Vol_Index <- read_rds("data/LCL_Currency_Vol_Index.rds") %>%
+  mutate(TRI = ifelse(TRI < 1, TRI * 100, TRI))                     # 2021-2026 prints divided by 100
+
+Size_Idx <-
+  Fill_Sectors(Size_Idx, Local_Index_Constituents, SafeCore) %>%
+  group_by(Fund, date) %>% mutate(Weight = Weight / sum(Weight)) %>% ungroup() %>%
+  mutate(Fund = recode(Fund, CappedSWIX = "Capped SWIX", LargeCaps = "Large Caps",
+                       MidCaps = "Mid Caps", SmallCaps = "Small Caps"))
+
+StartDate <- ymd(20141231)
+Size_Rets <- Size_Index_Returns(Size_Idx, Stock_Rets, StartDate)
+
+Snap_Dates <- c(ymd(20151231), ymd(20200131), ymd(20260831))
+```
 
 <!-- ############################## -->
 <!-- # Start Writing here: -->
@@ -123,301 +328,169 @@ write_rds(Example_data, path = "data/Example_data.rds")
 
 # Introduction \label{Introduction}
 
-References are to be made as follows: @fama1997[p. 33] and @grinold2000 Such authors could also be referenced in brackets [@grinold2000] and together [@fama1997 \& @grinold2000]. Source the reference code from scholar.google.com by clicking on ``cite'' below article name. Then select BibTeX at the bottom of the Cite window, and proceed to copy and paste this code into your ref.bib file, located in the directory's Tex folder. Open this file in Rstudio for ease of management, else open it in your preferred Tex environment. Add and manage your article details here for simplicity - once saved, it will self-adjust in your paper.
+Investors often treat size as a simple risk dial: small caps are risky, large caps are safe. This report tests that view for the local market. Using the monthly constituents of the Large, Mid and Small Cap indexes, and the Capped SWIX as the benchmark, we compare their sector exposures, stock concentration, volatility and returns since 2015. We use four techniques: realised volatility (including a GARCH model), rolling returns, active share and stratification by market regime. The short answer is that size is mainly a bet on sectors and on the rand, and that the "safest" looking index carries hidden tail risk.
 
-> I suggest renaming the top line after \@article, as done in the template ref.bib file, to something more intuitive for you to remember. Do not change the rest of the code. Also, be mindful of the fact that bib references from google scholar may at times be incorrect. Reference Latex forums for correct bibtex notation.
+# Data and Methodology \label{Data}
 
-To reference a section, you have to set a label using ``\\label'' in R, and then reference it in-text as e.g. referencing a later section, Section \ref{Meth}.
+Monthly constituent weights for the four indexes run from 2007, and daily stock returns from 2015, so our analysis starts in January 2015. Each index's daily return is rebuilt from its month-end weights, applied from the next trading day. The rebuilt indexes track the official ones closely, with correlations of 0.98 to 0.99. Daily stock returns beyond $\pm 50\%$ are treated as data errors, and weights are rescaled to 100%. Missing sector labels are filled from the other datasets; about 8% of Small Cap weight before 2020 remains unclassified.
 
-Writing in Rmarkdown is surprizingly easy - see [this website](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf) cheatsheet for a summary on writing Rmd writing tips.
-
-# Data  {-}
-
-Notice how I used the curly brackets and dash to remove the numbering of the data section.
-
-Discussion of data should be thorough with a table of statistics and ideally a figure.
-
-In your tempalte folder, you will find a Data and a Code folder. In order to keep your data files neat, store all of them in your Data folder. Also, I strongly suggest keeping this Rmd file for writing and executing commands, not writing out long pieces of data-wrangling. In the example below, I simply create a ggplot template for scatter plot consistency. I suggest keeping all your data in a data folder.
-
-<!-- The following is a code chunk. It must have its own unique name (after the r), or no name. After the comma follows commands for R which are self-explanatory. By default, the code and messages will not be printed in your pdf, just the output: -->
-
-```{r Figure1, warning =  FALSE, fig.align = 'center', fig.cap = "Caption Here \\label{Figure1}", fig.height = 3, fig.width = 6, dev = 'png'}
-  # This is just a random plot to show you a plot. This is done if the getwd() does not point to your Template's directory.
-  # Set WD below to your project's working directory.
-
-  g <-
-  ggplot(data = mtcars) +
-  geom_point(aes(x = disp, y = hp, color = cyl)) +
-  theme_bw() +
-  # theme(legend.position = "none") +
-  theme(plot.title = element_text(size = 10)) +
-  theme(axis.title = element_text(size = 10),
-        axis.title.x = element_text()) +
-  labs(y = "y-axis", x = "x-axis", title = "Some amazing plot")
-
-g
-
-```
-
-To make your graphs look extra nice in latex world, you could use Tikz device. Replace dev - 'png' with 'tikz' in the chunk below. Notice this makes the build time longer and produces extra tex files - so if you are comfortable with this, set your device to Tikz and try it out:
-
-```{r Figure2, warning =  FALSE, fig.align = 'center', fig.cap = "Caption Here \\label{Figure2}", fig.height = 3, fig.width = 6, dev = 'png'}
-
-ExampleData <- read_rds( "data/Example_data.rds")
-
-source("code/Example_Plot_Scatter.R") # Load a function from your 'code' folder. This e.g. plots scatters to your own preferences.
-source( "code/Data_Create.R") #
-
-ExampleData <- Data_Create(N = 100) # Same as the ExampleData loaded above - this is just a function to create the stored data.
-
-g <- Example_Plot_Scatter(DataInput = ExampleData,
-                          X = "Height_Score",
-                          Y = "Weight_Score",
-                          Z = "Agility_Score",
-                          Theme = theme_bw(), # run ?ggthemes for other themes.
-                          Title = "", # I prefer to use the caption set above.
-                          Ylab = "Height",
-                          Xlab = "Lenght",
-                          LegendTitle = "Agility",
-                          TitleSize = 10,
-                          LabSize = 10)
-
-g
-
-# Although the functions above are really simple, the principle is simple: containing calculations and data wrangling in their own functions will make this template much cleaner and more manageable.
-# When you start working, delete these meaningless functions and replace with your own...
-
-```
-
-To reference the plot above, add a ``\\label'' after the caption in the chunk heading, as done above. Then reference the plot as such: As can be seen, Figures \ref{Figure1}  and \ref{Figure2} are excellent, with Figure \ref{Figure2} being particularly aesthetically pleasing due to its device setting of Tikz. The nice thing now is that it correctly numbers all your figures (and sections or tables) and will update if it moves. The links are also dynamic.
-
-I very strongly suggest using ggplot2 (ideally in combination with dplyr) using the ggtheme package to change the themes of your figures.
-
-Also note the information that I have placed above the chunks in the code chunks for the figures. You can edit any of these easily - visit the Rmarkdown webpage for more information.
-
-# Splitting a page
-
-You can also very easily split a page using built-in Pandoc formatting. I comment this out in the code (as this has caused issues building the pdf for some users - which I presume to be a Pandoc issue), but you are welcome to try it out yourself by commenting out the following section in your Rmd file.
-
-
-<!-- :::::: {.columns data-latex="[T]"} -->
-<!-- ::: {.column data-latex="{0.7\textwidth}"} -->
-<!-- ```{r, echo=FALSE, fig.width=4, fig.height=4} -->
-<!-- par(mar = c(4, 4, .2, .1)) -->
-<!-- plot(cars, pch = 19) -->
-<!-- ``` -->
-<!-- ::: -->
-<!-- ::: {.column data-latex="{0.05\textwidth}"} -->
-<!-- \ -->
-<!-- ::: -->
-<!-- ::: {.column data-latex="{0.2\textwidth}"} -->
-<!-- \scriptsize -->
-
-<!-- ## Data {-} -->
-<!-- The figure on the left-hand side shows the `cars` data. -->
-
-<!-- Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do -->
-<!-- eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut -->
-<!-- enim ad minim veniam, quis nostrud exercitation ullamco laboris -->
-<!-- nisi ut aliquip ex ea commodo consequat. -->
-<!-- ::: -->
-<!-- :::::: -->
-
-
-
-#  Methodology \label{Meth}
-
-## Subsection
-Ideally do not overuse subsections. It equates to bad writing.^[This is an example of a footnote by the way. Something that should also not be overused.]
-
-## Math section
-
-Equations should be written as such:
+**Concentration** is measured by the weight in the ten largest stocks and by the effective number of stocks, $N^{eff} = 1/\sum_i w_i^2$: the number of equally weighted stocks that would give the same concentration. **Realised volatility** is $\sqrt{252}\,sd(r_t)$, per calendar year and on a rolling 63-day window, and we also fit a GJR-GARCH(1,1) model to each index [@glosten1993]. To compare constituents with their index we use the diversification ratio,
 
 \begin{align}
-\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \label{eq1} \\
-\int_{x = 1}^{\infty}x_{i} = 1 \notag
+DR_t = \frac{\sum_i w_{i,t}\, \sigma_{i,t}}{\sigma_{index,t}}, \label{eq1}
 \end{align}
 
-If you would like to see the equations as you type in Rmarkdown, use $ symbols instead (see this for yourself by adjusted the equation):
-
-$$
-\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \\
-\int_{x = 1}^{\infty}x_{i} = 1
-$$
-
-Note the equation above - this should appear in math in Rstudio. Writing nice math requires practice. Note I used a forward slashes to make a space in the equations. I can also align equations using  __\&__, and set to numbering only the first line. Now I will have to type ``begin equation'' which is a native \LaTeX command. Here follows a more complicated equation that you want aligned (using \& sign) and numbered:
-
+which is high when stocks are volatile on their own but move independently. **Rolling returns** are annualised three-year returns. **Active share** measures how different each index's holdings are from the benchmark [@cremers2009]:
 
 \begin{align}
-	y_t &= c + B(L) y_{t-1} + e_t   \label{eq2}    \\ \notag
-	e_t &= H_t^{1/2}  z_t ; \quad z_t \sim  N(0,I_N) \quad \& \quad H_t = D_tR_tD_t \\ \notag
-		D_t^2 &= {\sigma_{1,t}, \dots, \sigma_{N,t}}   \\ \notag
-		\sigma_{i,t}^2 &= \gamma_i+\kappa_{i,t}  v_{i, t-1}^2 +\eta_i  \sigma_{i, t-1}^2, \quad \forall i \\ \notag
-		R_{t, i, j} &= {diag(Q_{t, i, j}}^{-1}) . Q_{t, i, j} . diag(Q_{t, i, j}^{-1})  \\ \notag
-		Q_{t, i, j} &= (1-\alpha-\beta)  \bar{Q} + \alpha  z_t  z_t'  + \beta  Q_{t, i, j} \notag
+AS_t = \frac{1}{2} \sum_i \left| w_{i,t}^{index} - w_{i,t}^{SWIX} \right|, \label{eq2}
 \end{align}
 
-Note that in \ref{eq2} I have aligned the equations by the equal signs. I also want only one tag, and I create spaces using ``quads''.
+where 0 means identical holdings and 1 means no overlap. Finally, **stratification** compares each index's return and volatility in the months that fall in the top (bottom) 20% of local market volatility, rand volatility and the VIX.
 
-See if you can figure out how to do complex math using the two examples provided in \ref{eq1} and \ref{eq2}.
+# Results \label{Results}
 
-<!-- $$ -->
-<!-- This is a commented out section in the writing part. -->
-<!-- Comments are created by highlighting text, amnd pressing CTL+C -->
-<!-- \\begin{align} -->
-<!-- \\beta = \\alpha^2 -->
-<!-- \end{align} -->
-<!-- $$ -->
+## Risk and return
 
-
-# Including an external plot
-
-You can also include plots produced outside of your Rmarkdown file using the package *knitr*
-
-See below chunk:
-
-```{r, out.width = "205px", fig.cap=figures("Some Figure"), eval = F}
-
-knitr::include_graphics("YourFigureLocation/Logo.png")
-
+```{r tab1, results = 'asis'}
+Size_xts <- Size_Rets %>% mutate(Name = gsub(" ", "_", Name)) %>% tbl_xts(cols_to_xts = Return, spread_by = Name)
+Risk_Tab <- rbind(table.AnnualizedReturns(Size_xts, scale = 252),
+                  ES(Size_xts, p = 0.95, method = "modified"),
+                  maxDrawdown(Size_xts))
+data.frame(Measure = c("Annualised return", "Annualised volatility", "Sharpe ratio (Rf = 0)",
+                       "Modified ES (95%, daily)", "Maximum drawdown"), Risk_Tab, check.names = FALSE) %>%
+  select(Measure, `Capped SWIX` = Capped_SWIX, `Large Caps` = Large_Caps, `Mid Caps` = Mid_Caps, `Small Caps` = Small_Caps) %>%
+  Print_Table(Caption = "Risk and return, January 2015 to September 2026 \\label{tab1}", Digits = 3)
 ```
 
+Table \ref{tab1} already challenges the simple view of size. Small Caps have the lowest volatility (13.5%) and the best Sharpe ratio, and Large Caps the highest volatility. Mid Caps have the weakest return. But Small Caps also suffered by far the deepest drawdown (50%, during COVID): their low daily volatility hides a crash risk that only shows up in extreme markets. Part of this is a liquidity effect, as thinly traded stocks are priced less often, which smooths measured daily volatility.
 
-# Results
+## Sector exposure and concentration
 
-Tables can be included as follows. Use the _xtable_ (or kable) package for tables. Table placement = H implies Latex tries to place the table Here, and not on a new page (there are, however, very many ways to skin this cat. Luckily there are many forums online!).
-
-
-```{r ShortTable, results = 'asis'}
-
-library(xtable)
-data <- mtcars[1:5,] %>% tibble::as_tibble()
-
-table <- xtable(data, caption = "Short Table Example \\label{tab1}")
-  print.xtable(table,
-             # tabular.environment = "longtable",
-             floating = TRUE,
-             table.placement = 'H',
-             # scalebox = 0.3,
-             comment = FALSE,
-             caption.placement = 'bottom'
-             )
-
+```{r Figure1, fig.align = 'center', fig.cap = "Sector exposure of the size indexes \\label{Figure1}", fig.height = 4.2, fig.width = 6.5, dev = 'png'}
+Sector_Exp <- Size_Idx %>% group_by(Fund, date, Sector) %>% summarise(Weight = sum(Weight), .groups = "drop")
+g <- Sector_Exp %>% filter(date >= ymd(20150101)) %>%
+  ggplot() + geom_area(aes(date, Weight, fill = Sector), position = "stack") +
+  facet_wrap(~Fund) + labs(x = "", y = "") + fmxdat::theme_fmx()
+fmxdat::finplot(g, y.pct = TRUE, x.date.type = "%y", x.date.dist = "2 years")
 ```
 
-To reference calculations __in text__, _do this:_ From table \ref{tab1} we see the average value of mpg is `r mean(mtcars[1:5,]$mpg)`.
-
-Including tables that span across pages, use the following (note that I add below the table: ``continue on the next page''). This is a neat way of splitting your table across a page.
-
-Use the following default settings to build your own possibly long tables. Note that the following will fit on one page if it can, but cleanly spreads over multiple pages:
-
-```{r LongTable, results = 'asis'}
-
-library(xtable)
-
-data = mtcars %>% tibble::as_tibble()
-  addtorow          <- list()
-  addtorow$pos      <- list()
-  addtorow$pos[[1]] <- c(0)
-  addtorow$command  <- c(paste("\\hline \n",
-                               "\\endhead \n",
-                               "\\hline \n",
-                               "{\\footnotesize Continued on next page} \n",
-                               "\\endfoot \n",
-                               "\\endlastfoot \n",sep=""))
-table <- xtable(data, caption = "Long Table Example")
-  print.xtable(table,
-             tabular.environment = "longtable",
-             floating = FALSE, # Leave this as is.
-             table.placement = 'H', # Leave this as is.
-             booktabs = T, # Aesthetics
-             include.rownames = FALSE,  # Typically you don't want this in a table.
-             add.to.row = addtorow, # For adding the Continued on next page part...
-             comment = FALSE,
-             caption.placement = 'top',  # Where do you want the caption?
-             size="\\fontsize{12pt}{13pt}\\selectfont"  # Size of text in table..
-             )
-# See https://cran.r-project.org/web/packages/xtable/vignettes/xtableGallery.pdf for table inspiration
+```{r tab2, results = 'asis'}
+Rand_Exp <- Size_Idx %>% filter(date == max(date)) %>%
+  left_join(Hedge %>% select(Tickers, hedge), by = "Tickers") %>%
+  mutate(hedge = ifelse(is.na(hedge) | hedge == "", "Not classified", hedge)) %>%
+  group_by(Fund, hedge) %>% summarise(Weight = sum(Weight) * 100, .groups = "drop") %>%
+  spread(hedge, Weight)
+Conc <- Concentration(Size_Idx)
+Conc %>% filter(date %in% c(ymd(20151231), ymd(20260831))) %>%
+  mutate(Year = format(date, "%Y")) %>%
+  select(Fund, Year, Top10, Eff_N) %>%
+  pivot_wider(names_from = Year, values_from = c(Top10, Eff_N)) %>%
+  mutate(across(starts_with("Top10"), ~ . * 100)) %>%
+  left_join(Rand_Exp %>% select(Fund, `Pure Rand Hedge`, `Rand Leverage`, `Rand Play`, `Rand Neutral`), by = "Fund") %>%
+  setNames(c("Index", "Top10 2015", "Top10 2026", "Eff.N 2015", "Eff.N 2026",
+             "Hedge", "Leverage", "Play", "Neutral")) %>%
+  Print_Table(Caption = "Concentration: weight in top 10 stocks (\\%) and effective number of stocks, December 2015 and August 2026; rand exposure (\\% of weight in pure rand hedges, rand-leveraged, rand-play and rand-neutral stocks), August 2026 \\label{tab2}", Digits = 1, Size = "\\scriptsize")
 ```
 
-\hfill
+Figure \ref{Figure1} shows that the three indexes are very different portfolios. Large Caps have swung from Industrials (65% in 2015, much of it Naspers) to Resources (38% in 2026), and Table \ref{tab2} shows that almost 60% of their weight is now in rand hedges or rand-leveraged stocks. Mid Caps have shifted towards Financials, while Small Caps have become a Property and Industrials index (31% and 49%), with little exposure to the rand.
 
-<!-- hfill can be used to create a space, like here between text and table. -->
+Concentration has moved in opposite directions. Large Caps became much less concentrated in 2023, when their effective number of stocks rose from about 12 to over 20, consistent with a cap on the largest stock's weight. Mid Caps, by contrast, have become more concentrated (their effective number fell from 38 to 25), so their risk now rests on fewer names.
 
+## Realised volatility of the indexes and their constituents
 
-## Huxtable
-
-Huxtable is a very nice package for making working with tables between Rmarkdown and Tex easier.
-
-This cost some adjustment to the Tex templates to make it work, but it now works nicely.
-
-See documentation for this package [here](https://hughjonesd.github.io/huxtable/huxtable.html). A particularly nice addition of this package is for making the printing of regression results a joy (see [here](https://hughjonesd.github.io/huxtable/huxtable.html#creating-a-regression-table)). Here follows an example:
-
-
-If you are eager to use huxtable, comment out the Huxtable table in the Rmd template, and uncomment the colortbl package in your Rmd's root.
-
-Note that I do not include this in the ordinary template, as some latex users have complained it breaks when they build their Rmds (especially those using tidytex - I don't have this problem as I have the full Miktex installed on mine). Up to you, but I strongly recommend installing the package manually and using huxtable. To make this work, uncomment the _Adding additional latex packages_ part in yaml at the top of the Rmd file. Then comment out the huxtable example in the template below this line. Reknit, and enjoy.
-
-```{r, results = 'asis'}
-
-if(!require(huxtable)) install.packages(huxtable)
-library(huxtable)
-data(diamonds, package = 'ggplot2')
-Title <- "Regression Output"
-Label <- "Reg01"
-lm1 <- lm(price ~ carat, diamonds)
-lm2 <- lm(price ~ depth, diamonds)
-lm3 <- lm(price ~ carat + depth, diamonds)
-htab <-
-huxreg(lm1, lm2, lm3,
-                statistics = c(N = "nobs", R2 = "r.squared"),
-                note = "%stars%.") %>%
-  set_caption(Title) %>%
-  set_label(Label)
-# More settings:
-font_size(htab) <- 12
-# Let's change regression names: this is slightly hacky, but works. Comment out this section to see what the default looks like:
-  Names <- c( "Reg1", "Reg2", "Reg3")
-  for(i in 1:length(Names)) {
-    htab[1,][[1+i]] <- Names[i]
-  }
-# Now simply call the table:
-htab
-
+```{r Figure2, fig.align = 'center', fig.cap = "Rolling three-month realised volatility \\label{Figure2}", fig.height = 3.3, fig.width = 6.5, dev = 'png'}
+Roll_Vol_Plot(Size_Rets, Width = 63)
 ```
 
-FYI - R also recently introduced the gt package, which is worthwhile exploring too.
+```{r vol_prep, include=FALSE}
+Dec_Dates <- Size_Idx %>% distinct(date) %>%
+  filter(date >= ymd(20151231), format(date, "%m") == "12" | date == max(date)) %>% pull(date)
+CV <- map_df(Dec_Dates, ~ Constituent_Vol(.x, Size_Idx, Stock_Rets, Size_Rets))
 
-# Lists
+xts_G <- Size_Rets %>% mutate(Name = gsub(" ", "_", Name)) %>%
+  group_by(Name) %>% mutate(scaledret = log(1 + Return) - mean(log(1 + Return))) %>% ungroup() %>%
+  tbl_xts(cols_to_xts = scaledret, spread_by = Name)
+GARCH_Coefs <- map_df(colnames(xts_G), function(nm) {
+  fit <- GARCH_Fit(na.omit(xts_G[, nm]))
+  tibble(Index = gsub("_", " ", nm), alpha = coef(fit)["alpha1"], beta = coef(fit)["beta1"],
+         gamma = coef(fit)["gamma1"], Persistence = persistence(fit))
+})
+```
 
-To add lists, simply using the following notation
+```{r tab3, results = 'asis'}
+CV %>% group_by(Fund) %>%
+  summarise(`Avg stock vol` = mean(Wtd_Stock_Vol) * 100, `Index vol` = mean(Index_Vol) * 100,
+            `Div. ratio (avg)` = mean(Div_Ratio), `Div. ratio (2026)` = Div_Ratio[date == max(date)]) %>%
+  left_join(GARCH_Coefs, by = c("Fund" = "Index")) %>%
+  rename(Index = Fund, `Stock vol` = `Avg stock vol`, `DR avg` = `Div. ratio (avg)`, `DR 2026` = `Div. ratio (2026)`,
+         `$\\alpha$` = alpha, `$\\beta$` = beta, `$\\gamma$` = gamma) %>%
+  Print_Table(Caption = "Weighted average constituent volatility and index volatility (annual averages, \\%), diversification ratio (DR), and GJR-GARCH(1,1) estimates \\label{tab3}", Digits = 2, Size = "\\scriptsize")
+```
 
-* This is really simple
+Figure \ref{Figure2} shows that Small Caps are the least volatile index throughout, while Large Caps are usually the most volatile; in 2026 the gap is wide (12% against 22%). Table \ref{tab3} explains why. The stocks inside the Small Cap index are individually the most volatile, but they move largely independently, so their risks cancel out: the diversification ratio averages about 3, against about 2 for Large Caps. Large Cap stocks, by contrast, share common drivers such as commodity prices and the rand, so their risks add up.
 
-    + Just note the spaces here - writing in R you have to sometimes be pedantic about spaces...
+The GARCH estimates add a second difference. Volatility is highly persistent in all four indexes (around 0.95), but the leverage effect, $\gamma$, is about twice as strong in Large Caps as in Small Caps. Bad news therefore raises volatility much more in the large-cap end of the market, which is where global shocks arrive first.
 
-* Note that Rmarkdown notation removes the pain of defining \LaTeX environments!
+## Rolling returns and active share
 
-# Conclusion
+```{r Figure3, fig.align = 'center', fig.cap = "Rolling three-year annualised returns \\label{Figure3}", fig.height = 3.3, fig.width = 6.5, dev = 'png'}
+RR <- Roll_Returns(Size_Rets, Years = 3)
+Beat <- RR %>% select(date, Name, RollRet) %>% spread(Name, RollRet) %>%
+  summarise(across(c(`Large Caps`, `Mid Caps`, `Small Caps`), ~ mean(. > `Capped SWIX`)))
+g <- RR %>% ggplot() + geom_line(aes(date, RollRet, color = Name), linewidth = 0.7) +
+  geom_hline(yintercept = 0) + labs(x = "", y = "") + fmxdat::theme_fmx()
+fmxdat::finplot(g, y.pct = TRUE, x.date.type = "%Y", x.date.dist = "1 year")
+```
 
-I hope you find this template useful. Remember, stackoverflow is your friend - use it to find answers to questions. Feel free to write me a mail if you have any questions regarding the use of this package. To cite this package, simply type citation("Texevier") in Rstudio to get the citation for @Texevier (Note that uncited references in your bibtex file will not be included in References).
+Figure \ref{Figure3} shows that Small Caps give the widest range of outcomes, from a three-year return of -20% after COVID to +43% in the recovery, with the highest median (16%). Large Caps beat the Capped SWIX over `r round(Beat[["Large Caps"]] * 100)`% of three-year windows, Small Caps over `r round(Beat[["Small Caps"]] * 100)`%, and Mid Caps over only `r round(Beat[["Mid Caps"]] * 100)`%.
 
-<!-- Make title of bibliography here: -->
-<!-- \newpage -->
+```{r Figure4, fig.align = 'center', fig.cap = "Active share relative to the Capped SWIX \\label{Figure4}", fig.height = 3, fig.width = 6.5, dev = 'png'}
+AS <- Active_Share(Size_Idx, Bench = "Capped SWIX")
+g <- AS %>% filter(date >= ymd(20150101)) %>%
+  ggplot() + geom_line(aes(date, Active_Share, color = Fund), linewidth = 0.8) +
+  labs(x = "", y = "") + fmxdat::theme_fmx()
+fmxdat::finplot(g, y.pct = TRUE, x.date.type = "%Y", x.date.dist = "1 year")
+```
+
+Active share in Figure \ref{Figure4} confirms how different the indexes are from the benchmark. Large Caps have an active share of only 13% today (25% on average), so they add very little to a portfolio that already holds the Capped SWIX. Mid Caps (around 80%) and Small Caps (around 95%) are genuinely different portfolios, and so offer real diversification away from the benchmark's dominant stocks.
+
+## Stratification: behaviour in stressed regimes
+
+```{r tab4, results = 'asis'}
+Winsor <- function(x) { q <- quantile(x, c(0.01, 0.99), na.rm = TRUE); pmin(pmax(x, q[1]), q[2]) }
+Idxs <- Size_Rets %>% group_by(Name) %>% mutate(Return = Winsor(Return)) %>% ungroup() %>%
+  mutate(YearMonth = format(date, "%Y%m"))
+Monthly_Lvl <- function(df, Nm) df %>% filter(Name == Nm, date >= ymd(20150101)) %>%
+  mutate(YearMonth = format(date, "%Y%m")) %>% group_by(YearMonth) %>% summarise(Level = mean(TRI))
+ZAR_M <- Local_Cncy_Vol_Index %>% mutate(Name = "SAVIUSD") %>% Monthly_Lvl("SAVIUSD")
+VIX_M <- Monthly_Lvl(Implied_Vol, "VIX")
+SWIXVol_M <- Size_Rets %>% filter(Name == "Capped SWIX") %>% mutate(YearMonth = format(date, "%Y%m")) %>%
+  group_by(YearMonth) %>% summarise(Level = sd(Return) * sqrt(252))
+Top_Q <- function(df) df %>% filter(Level > quantile(Level, 0.8)) %>% pull(YearMonth)
+Bot_Q <- function(df) df %>% filter(Level < quantile(Level, 0.2)) %>% pull(YearMonth)
+bind_rows(
+  Strat_Perf(Idxs, Top_Q(SWIXVol_M), "High local vol"), Strat_Perf(Idxs, Bot_Q(SWIXVol_M), "Low local vol"),
+  Strat_Perf(Idxs, Top_Q(ZAR_M), "High ZAR vol"),       Strat_Perf(Idxs, Bot_Q(ZAR_M), "Low ZAR vol"),
+  Strat_Perf(Idxs, Top_Q(VIX_M), "High VIX"),           Strat_Perf(Idxs, Bot_Q(VIX_M), "Low VIX")) %>%
+  mutate(Ret = Ret * 100) %>%
+  select(Period, Name, Ret, SD_Ratio) %>%
+  pivot_wider(names_from = Name, values_from = c(Ret, SD_Ratio)) %>%
+  select(Period, `Ret_Capped SWIX`, `Ret_Large Caps`, `Ret_Mid Caps`, `Ret_Small Caps`,
+         `SD_Ratio_Capped SWIX`, `SD_Ratio_Large Caps`, `SD_Ratio_Mid Caps`, `SD_Ratio_Small Caps`) %>%
+  setNames(c("Regime", "R: SWIX", "R: Large", "R: Mid", "R: Small",
+             "V: SWIX", "V: Large", "V: Mid", "V: Small")) %>%
+  Print_Table(Caption = "Annualised return (R, \\%) and volatility relative to the full sample (V), by regime \\label{tab4}", Digits = 2, Size = "\\scriptsize")
+```
+
+Table \ref{tab4} shows how the indexes behave when conditions change. In months of high local market volatility, Large Caps lost 3.9% a year while Mid Caps still gained 8.5%. In months of high rand volatility the gap is similar: Mid Caps returned 13.9%, against about 5% for Large and Small Caps. When the rand is calm, Large Caps do best. Mid Caps therefore act as a domestic hedge against local and currency stress, while Large Caps carry the rand and commodity risk of the benchmark. All indexes are about a third more volatile in stressed months, so stratification shows differences in returns rather than in the level of volatility. High-VIX months include strong rebound months, which explains their positive average returns.
+
+# Conclusion \label{Conclusion}
+
+Size is not a simple risk dial on the local market. Large Caps are close to the benchmark, but they have become a concentrated bet on Resources and on the rand, with the highest volatility and the strongest response to bad news. Small Caps look safest on daily volatility because their stocks move independently, but they suffered the deepest drawdown, so their risk lies in the tail. Mid Caps have the weakest long-run return, yet they are the only index that held up in local and currency stress. For a portfolio benchmarked to the Capped SWIX, Large Caps add little, while Mid and Small Caps offer genuine diversification, but each brings its own sector and liquidity risks that must be managed.
 
 \newpage
 
 # References {-}
 
 <div id="refs"></div>
-
-
-# Appendix {-}
-
-## Appendix A {-}
-
-Some appendix information here
-
-## Appendix B {-}
-
