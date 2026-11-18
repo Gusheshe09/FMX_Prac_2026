@@ -762,5 +762,166 @@ Strat %>% select(Period, Name, Ret, SD_Ratio) %>%
 
 # Question 3: Portfolio Return Comparison
 
+Load the data and build the monthly benchmark. Daily Capped SWIX returns compounded to calendar month-ends, so they line up with the peer and ABC data.
+
+```{r Q3_data}
+fmxdat::source_all("Questions/Question3/code")
+
+Active_Manager_Peers <- read_rds("data/Active_Managers.rds") %>% rename(Return = Returns)
+ABC_Fund <- read_rds("data/ABC_Fund.rds") %>% rename(Return = Returns)
+Idx_Daily <- read_rds("data/Index_Returns_Daily.rds")
+Size_Idx <- read_rds("data/Monthly_Index_Constituents.rds")
+Stock_Rets <- read_rds("data/Stock_Returns_Daily.rds") %>%
+  select(date, Tickers, Return = Returns) %>%
+  mutate(Return = ifelse(abs(Return) > 0.5, NA, Return))
+
+Bench_M <-
+  Idx_Daily %>% filter(Tickers == "J433") %>%
+  mutate(YM = format(date, "%Y%m")) %>%
+  group_by(YM) %>% summarise(Return = prod(1 + Returns) - 1, .groups = "drop") %>%
+  mutate(date = ceiling_date(ymd(paste0(YM, "01")), "month") - days(1)) %>%
+  select(date, Return)
+
+Funds <- bind_rows(Active_Manager_Peers, ABC_Fund) %>%
+  mutate(Type = ifelse(Name == "ABC_Fund", "ABC Fund", "Peers"))
+Peer_Med <- Active_Manager_Peers %>% group_by(date) %>% summarise(PeerMed = median(Return))
+```
+
+
+How high is active managers’ beta? Rolling 3-year beta, R² and alpha. The chart overlays boxplots on a scatter of every peer’s beta each December, with ABC in red.
+
+
+```{r Q3_beta}
+RB <- Roll_Beta(Funds %>% select(date, Name, Return), Bench_M, Window = 36) %>%
+  mutate(Type = ifelse(Name == "ABC_Fund", "ABC Fund", "Peers"))
+
+RB %>% group_by(Type) %>%
+  summarise(Median_Beta = median(Beta), Median_R2 = median(R2), Median_Alpha = median(Alpha), Funds = n_distinct(Name))
+
+RB %>% filter(Type == "Peers") %>% summarise(Share_Beta_above_0.8 = mean(Beta > 0.8), Share_R2_above_0.8 = mean(R2 > 0.8))
+
+# ABC's percentile among peers each December (low = less market-driven)
+RB %>% filter(month(date) == 12 | date == max(date)) %>%
+  group_by(date) %>% mutate(Beta_Pct = percent_rank(Beta), R2_Pct = percent_rank(R2)) %>%
+  filter(Type == "ABC Fund") %>% select(date, Beta, Beta_Pct, R2, R2_Pct)
+
+g_beta <-
+  RB %>% filter(month(date) == 12 | date == max(date)) %>% mutate(Year = factor(year(date))) %>%
+  ggplot(aes(Year, Beta)) +
+  geom_jitter(data = . %>% filter(Type == "Peers"), color = "grey60", alpha = 0.5, width = 0.2, size = 1) +
+  geom_boxplot(data = . %>% filter(Type == "Peers"), fill = NA, outlier.shape = NA, color = "steelblue", linewidth = 0.7) +
+  geom_point(data = . %>% filter(Type == "ABC Fund"), color = "red", size = 4, shape = 18) +
+  labs(title = "Rolling 3-year beta to the Capped SWIX",
+       subtitle = "Peers (grey dots, boxplot) vs ABC Fund (red)", x = "", y = "Beta") +
+  fmxdat::theme_fmx()
+g_beta
+```
+
+
+Does ABC have different return drivers? PCA on the peer correlation matrix (Topic 3), how much of each fund’s return the industry factor explains, plus correlation with the median peer and tracking error.
+
+```{r Q3_drivers}
+PCA_Panel <-
+  Active_Manager_Peers %>% filter(date >= ymd(20150131)) %>%
+  group_by(Name) %>% filter(n() == max(table(Active_Manager_Peers$date[Active_Manager_Peers$date >= ymd(20150131)]) * 0 + 130)) %>%
+  ungroup() %>% spread(Name, Return)
+
+pca <- prcomp(PCA_Panel %>% select(-date), scale. = TRUE)     # scale = correlation matrix
+summary(pca)$importance[, 1:5]
+
+PC <- tibble(date = PCA_Panel$date, PC1 = pca$x[, 1])
+
+Funds_PC <-
+  Funds %>% inner_join(PC, by = "date") %>%
+  group_by(Name, Type) %>% filter(n() >= 60) %>%
+  summarise(R2_PC1 = cor(Return, PC1)^2, .groups = "drop") %>%
+  mutate(Pct = percent_rank(R2_PC1))
+Funds_PC %>% group_by(Type) %>% summarise(Median_R2_PC1 = median(R2_PC1))
+Funds_PC %>% filter(Type == "ABC Fund")
+
+Cor_Peer <-
+  Funds %>% filter(date >= ymd(20150131)) %>%
+  inner_join(Peer_Med, by = "date") %>% inner_join(Bench_M %>% rename(BM = Return), by = "date") %>%
+  group_by(Name, Type) %>% filter(n() >= 60) %>%
+  summarise(Cor_Peer = cor(Return, PeerMed), Cor_BM = cor(Return, BM), TE = sd(Return - BM) * sqrt(12), .groups = "drop")
+Cor_Peer %>% group_by(Type) %>% summarise(across(c(Cor_Peer, Cor_BM, TE), median))
+Cor_Peer %>% mutate(Pct_Cor_Peer = percent_rank(Cor_Peer), Pct_TE = percent_rank(TE)) %>% filter(Type == "ABC Fund")
+```
+
+
+Relative performance over time. Peer bands of rolling 12-month returns with ABC on top, ABC’s percentile rank, and the record since 2015 against the median peer and the benchmark.
+
+
+```{r Q3_relative}
+RR <- Roll_Returns_M(Funds %>% select(date, Name, Return), 12)
+
+Bands <-
+  RR %>% filter(Name != "ABC_Fund") %>% group_by(date) %>%
+  summarise(q05 = quantile(RollRet, .05), q25 = quantile(RollRet, .25), q50 = median(RollRet),
+            q75 = quantile(RollRet, .75), q95 = quantile(RollRet, .95), .groups = "drop") %>%
+  inner_join(RR %>% filter(Name == "ABC_Fund") %>% select(date, ABC = RollRet), by = "date")
+
+Rank <-
+  RR %>% group_by(date) %>% filter(any(Name == "ABC_Fund")) %>%
+  mutate(Pct = percent_rank(RollRet)) %>% filter(Name == "ABC_Fund") %>% ungroup()
+Rank %>% summarise(Avg_Percentile = mean(Pct), Top_Quartile = mean(Pct > 0.75),
+                   Top_Half = mean(Pct > 0.5), Bottom_Quartile = mean(Pct < 0.25), Latest = dplyr::last(Pct))
+
+g_bands <-
+  Bands %>% ggplot(aes(date)) +
+  geom_ribbon(aes(ymin = q05, ymax = q95), fill = "grey85") +
+  geom_ribbon(aes(ymin = q25, ymax = q75), fill = "grey65") +
+  geom_line(aes(y = q50), color = "grey30", linetype = 2) +
+  geom_line(aes(y = ABC), color = "red", linewidth = 1) +
+  labs(title = "Rolling 12-month return: ABC Fund vs peer range",
+       subtitle = "Light band: 5th-95th percentile; dark band: 25th-75th; dashed: median peer", x = "", y = "") +
+  fmxdat::theme_fmx()
+fmxdat::finplot(g_bands, y.pct = TRUE)
+
+Track <- Funds %>% filter(Name == "ABC_Fund", date >= ymd(20150131)) %>% select(date, ABC = Return) %>%
+  inner_join(Peer_Med, by = "date") %>% inner_join(Bench_M %>% rename(BM = Return), by = "date")
+Track %>% summarise(across(c(ABC, PeerMed, BM), ~ prod(1 + .)^(12 / n()) - 1))   # annualised return
+Track %>% summarise(across(c(ABC, PeerMed, BM), ~ sd(.) * sqrt(12)))             # annualised volatility
+```
+
+
+Does high market dispersion reward ABC? Testing the manager’s claim month by month, over 12-month windows, and in up and down markets.
+
+```{r Q3_dispersion}
+CSV_M <- Monthly_CSV(Size_Idx, Stock_Rets)
+
+D <- Track %>% mutate(YM = format(date, "%Y%m")) %>%
+  inner_join(CSV_M %>% select(YM, CSV), by = "YM") %>%
+  mutate(Regime = case_when(CSV >= quantile(CSV, 0.8) ~ "High dispersion",
+                            CSV <= quantile(CSV, 0.2) ~ "Low dispersion", TRUE ~ "Normal"))
+
+# 1. Month by month
+D %>% group_by(Regime) %>%
+  summarise(Months = n(), ABC_vs_Peer = mean(ABC - PeerMed) * 12, Hit_Rate = mean(ABC > PeerMed))
+
+# 2. Over rolling 12-month windows
+R12 <- D %>% arrange(date) %>%
+  mutate(Rel12 = RcppRoll::roll_sum(ABC - PeerMed, 12, fill = NA, align = "right"),
+         CSV12 = RcppRoll::roll_mean(CSV, 12, fill = NA, align = "right")) %>%
+  filter(!is.na(Rel12))
+R12 %>% mutate(Reg = case_when(CSV12 >= quantile(CSV12, 0.8) ~ "High", CSV12 <= quantile(CSV12, 0.2) ~ "Low", TRUE ~ "Normal")) %>%
+  group_by(Reg) %>% summarise(Windows = n(), Share_Beating_Peer = mean(Rel12 > 0), Avg_Rel12 = mean(Rel12))
+R12 %>% summarise(Share_Beating_Peer = mean(Rel12 > 0), Correlation = cor(Rel12, CSV12))
+
+g_disp <- R12 %>% ggplot(aes(CSV12, Rel12)) +
+  geom_point(color = "steelblue", alpha = 0.6) + geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Market dispersion and ABC's edge over the median peer (12-month windows)",
+       x = "Average market dispersion", y = "ABC minus median peer") + fmxdat::theme_fmx()
+g_disp
+
+# 3. Up vs down market months
+D %>% mutate(Market = ifelse(BM < 0, "Down month", "Up month")) %>% group_by(Market) %>%
+  summarise(Months = n(), ABC_vs_BM = mean(ABC - BM) * 12, ABC_vs_Peer = mean(ABC - PeerMed) * 12,
+            Hit_Rate = mean(ABC > PeerMed))
+```
+
+
 # Question 4: Portfolio Construction
+
+
 
