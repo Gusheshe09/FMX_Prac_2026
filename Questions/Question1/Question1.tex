@@ -165,26 +165,6 @@
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 
 %%% Include extra packages specified by user
-\usepackage{array}
-\providecommand{\huxb}[2]{\arrayrulecolor[RGB]{#1}\global\arrayrulewidth=#2pt}
-\providecommand{\huxvb}[2]{\color[RGB]{#1}\vrule width #2pt}
-\providecommand{\huxtpad}[1]{\rule{0pt}{#1}}
-\providecommand{\huxbpad}[1]{\rule[-#1]{0pt}{#1}}
-\usepackage{caption}
-\usepackage{graphicx}
-\usepackage{siunitx}
-\usepackage[normalem]{ulem}
-\usepackage{colortbl}
-\usepackage{multirow}
-\usepackage{hhline}
-\usepackage{calc}
-\usepackage{tabularx}
-\usepackage{longtable}
-\usepackage{threeparttable}
-\usepackage{threeparttablex}
-\usepackage{wrapfig}
-\usepackage{adjustbox}
-\usepackage{hyperref}
 
 %%% Hard setting column skips for reports - this ensures greater consistency and control over the length settings in the document.
 %% page layout
@@ -219,42 +199,41 @@
 
 \begin{frontmatter}  %
 
-\title{Helping You Write Academic Papers in R using Texevier}
+\title{Riding Offshore Storms: Volatility, Risk Concentration and the
+Alpha Opportunity in South African Equities}
 
 % Set to FALSE if wanting to remove title (for submission)
 
 
 
 
-\author[Add1]{Jane Doe\footnote{\textbf{Contributions:}
-  \newline \emph{The authors would like to thank no institution for
-  money donated to this project. Thank you sincerely.}}}
-\ead{nfkatzke@gmail.com}
-
-\author[Add1,Add2]{John Smith}
-\ead{John@gmail.com}
-
-\author[Add1,Add2]{John Doe}
-\ead{Joe@gmail.com}
+\author[Add1]{Kieron Maseko (26572982)}
+\ead{26572982@sun.ac.za}
 
 
 
-\address[Add1]{Some Institution, Cape Town, South Africa}
-\address[Add2]{Some other Institution, Cape Town, South Africa}
 
-\cortext[cor]{Corresponding author: Jane Doe\footnote{\textbf{Contributions:}
-  \newline \emph{The authors would like to thank no institution for
-  money donated to this project. Thank you sincerely.}}}
+
+\address[Add1]{Stellenbosch University, Stellenbosch, South Africa}
+
+\cortext[cor]{Corresponding author: Kieron Maseko (26572982)}
 
 \begin{abstract}
 \small{
-Abstract to be written here. The abstract should not be too long and
-should provide the reader with a good understanding what you are writing
-about. Academic papers are not like novels where you keep the reader in
-suspense. To be effective in getting others to read your paper, be as
-open and concise about your findings here as possible. Ideally, upon
-reading your abstract, the reader should feel he / she must read your
-paper in entirety.
+This report asks whether local equity volatility has risen, how our
+flagship SafeCore fund copes with it, and whether stock-pickers have
+more room to add value since 2020. Local volatility has not trended up
+since 2015, but it comes in episodes, and 2026 is the most volatile year
+outside of COVID. It moves closely with global volatility (a GARCH
+volatility correlation of 0.85), but the 2026 spike tracks emerging
+markets rather than developed markets. In months of high offshore
+stress, local volatility runs about a third above normal. SafeCore earns
+alpha but does nothing to dampen volatility, and its risk is now
+concentrated in gold miners: Resources hold 40\% of the weight but 68\%
+of the risk. Dispersion between stocks has recovered to its highest
+level since 2022, but in stress periods higher dispersion comes with
+higher correlation. We recommend keeping SafeCore's stock-selection edge
+while adding a deliberate risk ballast.
 }
 \end{abstract}
 
@@ -263,11 +242,11 @@ paper in entirety.
 
 \begin{keyword}
 \footnotesize{
-Multivariate GARCH \sep Kalman Filter \sep Copula \\
+Volatility \sep GARCH \sep DCC \sep Dispersion \sep Factor Exposure \\
 \vspace{0.3cm}
 }
 \footnotesize{
-\textit{JEL classification} L250 \sep L100
+\textit{JEL classification} G11 \sep G12 \sep C58
 }
 \end{keyword}
 
@@ -305,50 +284,136 @@ Multivariate GARCH \sep Kalman Filter \sep Copula \\
 \section{\texorpdfstring{Introduction
 \label{Introduction}}{Introduction }}\label{introduction}
 
-References are to be made as follows: Fama \& French
-(\citeproc{ref-fama1997}{1997: 33}) and Grinold \& Kahn
-(\citeproc{ref-grinold2000}{2000}) Such authors could also be referenced
-in brackets (\citeproc{ref-grinold2000}{Grinold \& Kahn, 2000}) and
-together Grinold \& Kahn (\citeproc{ref-grinold2000}{2000}). Source the
-reference code from scholar.google.com by clicking on ``cite'\,' below
-article name. Then select BibTeX at the bottom of the Cite window, and
-proceed to copy and paste this code into your ref.bib file, located in
-the directory's Tex folder. Open this file in Rstudio for ease of
-management, else open it in your preferred Tex environment. Add and
-manage your article details here for simplicity - once saved, it will
-self-adjust in your paper.
+Offshore shocks have dominated recent markets: tariff wars, record
+global policy uncertainty and sharp swings in oil and gold. This report
+asks three questions for our investment committee. First, has volatility
+on the local exchange increased, and does it simply mirror the global
+experience? Second, how well does our flagship fund, SafeCore, handle
+that volatility, where does its risk come from, and what factor tilts
+does it carry? Third, has the opportunity for active managers to add
+value (alpha) improved since 2020, and how does it move with global
+conditions?
 
-\begin{quote}
-I suggest renaming the top line after @article, as done in the template
-ref.bib file, to something more intuitive for you to remember. Do not
-change the rest of the code. Also, be mindful of the fact that bib
-references from google scholar may at times be incorrect. Reference
-Latex forums for correct bibtex notation.
-\end{quote}
+We follow the standard approach in financial econometrics: measure
+volatility in several ways (realised, implied and model-based), test
+whether stress regimes change the behaviour of returns, and judge a
+portfolio by how it adds up risk, not only by its weights. Section
+\ref{Data} describes the data and method, Section \ref{Results} reports
+the results for each question, and Section \ref{Conclusion} concludes
+with a recommendation.
 
-To reference a section, you have to set a label using
-``\textbackslash label'\,' in R, and then reference it in-text as
-e.g.~referencing a later section, Section \ref{Meth}.
+\section{\texorpdfstring{Data and Methodology
+\label{Data}}{Data and Methodology }}\label{data-and-methodology}
 
-Writing in Rmarkdown is surprizingly easy - see
-\href{https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf}{this
-website} cheatsheet for a summary on writing Rmd writing tips.
+We use daily total returns for the Capped SWIX (our benchmark), the Top
+40, Mid-cap and Small-cap indexes from 2015, and the MSCI All Country
+World (ACWI) and Emerging Markets (EM) indexes as the global comparison
+(in USD). Fear gauges include the VIX, V2X and VXEEM implied volatility
+indexes, the global Economic Policy Uncertainty index (EPU), the MOVE
+bond volatility index, and USD-ZAR implied volatility (SAVIUSD).
+SafeCore's monthly holdings are combined with daily stock returns, and
+Capped SWIX constituent weights (from August 2020) are used for
+dispersion, correlations and factor exposures.
 
-\section*{Data}\label{data}
-\addcontentsline{toc}{section}{Data}
+A few data choices matter. Daily stock returns above +50\% or below
+-50\% are treated as data errors and removed. SafeCore's weights only
+sum to between 79\% and 100\%, so they are rescaled to 100\%. SAVIUSD
+contains values recorded divided by 100 between 2021 and 2026, which we
+correct. Finally, the official Low-Volatility index only starts in 2024,
+so we rebuild it from its constituents back to August 2020; the rebuilt
+series has a correlation of 0.999 with the official index over their
+common sample.
 
-Notice how I used the curly brackets and dash to remove the numbering of
-the data section.
+\textbf{Volatility.} Realised volatility is the annualised standard
+deviation of daily returns, \(\sigma = \sqrt{252}\, sd(r_t)\), measured
+per calendar year and over a rolling 63-day (three-month) window. To
+separate signal from noise we fit an AR(1)-GJR-GARCH(1,1) model with a
+skewed-t distribution (\citeproc{ref-bollerslev1986}{Bollerslev, 1986};
+\citeproc{ref-glosten1993}{Glosten, Jagannathan \& Runkle, 1993}):
 
-Discussion of data should be thorough with a table of statistics and
-ideally a figure.
+\begin{align}
+r_t &= \mu + \phi r_{t-1} + \varepsilon_t, \qquad \varepsilon_t = \sqrt{h_t}\, z_t \notag \\
+h_t &= \omega + \alpha \varepsilon_{t-1}^2 + \gamma I_{t-1}\varepsilon_{t-1}^2 + \beta h_{t-1}, \qquad I_{t-1} = 1 \text{ if } \varepsilon_{t-1} < 0 \label{eq1}
+\end{align}
 
-In your tempalte folder, you will find a Data and a Code folder. In
-order to keep your data files neat, store all of them in your Data
-folder. Also, I strongly suggest keeping this Rmd file for writing and
-executing commands, not writing out long pieces of data-wrangling. In
-the example below, I simply create a ggplot template for scatter plot
-consistency. I suggest keeping all your data in a data folder.
+Here \(\alpha\) is the impact of a new shock, \(\gamma\) the extra
+impact of bad news (the leverage effect) and
+\(\alpha + \beta + \gamma/2\) the persistence of volatility. GJR was
+chosen over the standard GARCH on information criteria; the more complex
+eGARCH and apARCH models improved the fit only marginally.
+
+\textbf{Stratification.} To link local markets to offshore stress, we
+flag the months in the top (bottom) 20\% of the VIX, global EPU and
+Brent oil volatility. For each index we compare volatility in those
+months with its full-sample volatility; a ratio above one means the
+index is more volatile in that regime.
+
+\textbf{Portfolio risk.} SafeCore's daily returns are calculated from
+its month-end weights, applied from the next trading day. Each stock's
+share of portfolio risk is its component contribution to portfolio
+volatility, \(w_i (\Sigma w)_i / \sigma_p^2\), using a trailing one-year
+covariance matrix at each year-end.
+
+\textbf{Factor scores.} We build our own Momentum score (the six-month
+return excluding the latest month) and Low-Volatility score (minus the
+six-month realised volatility), standardise both across stocks each
+month, and compare them with the third-party scores. A portfolio's
+factor exposure is the weighted average score of its holdings.
+
+\textbf{Alpha opportunity.} Dispersion is the weighted cross-sectional
+volatility of Capped SWIX constituents:
+
+\begin{align}
+CSV_t = \sqrt{\sum_{i} w_{i,t} \left(R_{i,t} - \bar{R}_t\right)^2}, \qquad \bar{R}_t = \sum_i w_{i,t} R_{i,t} \label{eq2}
+\end{align}
+
+We weight by index weight because SafeCore is measured against a
+cap-weighted benchmark: the alpha it can capture lies where the weight
+is, and an unweighted measure lets small, illiquid stocks dominate. We
+pair this with the average pairwise correlation of the 40 largest
+constituents over a rolling 63-day window, the spread of peer fund
+returns, and a DCC-GARCH(1,1) model of the correlations between the
+Financials, Industrials and Resources sectors
+(\citeproc{ref-engle2002}{Engle, 2002}).
+
+\section{\texorpdfstring{Results
+\label{Results}}{Results }}\label{results}
+
+\subsection{Has local volatility increased, and does it mirror the
+global
+experience?}\label{has-local-volatility-increased-and-does-it-mirror-the-global-experience}
+
+Table \ref{tab1} shows that local volatility has no steady upward trend
+since 2015. It comes in episodes: 2015-16, the COVID crash in 2020,
+2022, and again in 2026. Even so, 2026 is the most volatile year outside
+of COVID for both the Capped SWIX (20.7\%) and the Top 40 (22.4\%). The
+local market is also structurally more volatile than the global market,
+by about two to six percentage points a year.
+
+\begin{table}[H]
+\centering
+\caption{Annualised realised volatility (\%) by calendar year (2026 to September) \label{tab1}} 
+\begingroup\footnotesize
+\begin{tabular}{lrrrrrr}
+  \hline
+Year & Capped SWIX & Top 40 & MidCaps & SmallCaps & ACWI & EM \\ 
+  \hline
+2015 & 20.9 & 18.2 & 14.4 & 13.3 & 12.8 & 15.9 \\ 
+  2016 & 17.6 & 18.2 & 16.8 & 10.9 & 12.7 & 16.8 \\ 
+  2017 & 9.6 & 11.2 & 11.7 & 8.0 & 5.6 & 9.3 \\ 
+  2018 & 16.5 & 18.7 & 14.7 & 10.1 & 12.3 & 15.2 \\ 
+  2019 & 13.0 & 13.9 & 12.3 & 8.1 & 9.8 & 11.4 \\ 
+  2020 & 30.5 & 30.2 & 32.4 & 29.5 & 27.2 & 23.5 \\ 
+  2021 & 14.5 & 16.9 & 14.8 & 13.4 & 10.7 & 14.9 \\ 
+  2022 & 19.7 & 22.6 & 16.8 & 14.7 & 19.4 & 20.2 \\ 
+  2023 & 15.2 & 17.2 & 15.1 & 11.2 & 10.8 & 13.0 \\ 
+  2024 & 12.3 & 13.2 & 14.5 & 10.9 & 10.3 & 13.1 \\ 
+  2025 & 15.0 & 15.7 & 17.5 & 12.1 & 13.8 & 15.5 \\ 
+  2026 & 20.7 & 22.4 & 18.6 & 12.0 & 12.0 & 25.2 \\ 
+   \hline
+\end{tabular}
+\endgroup
+\end{table}
 
 \begin{figure}[H]
 
@@ -356,13 +421,17 @@ consistency. I suggest keeping all your data in a data folder.
 
 }
 
-\caption{Caption Here \label{Figure1}}\label{fig:Figure1}
+\caption{Rolling three-month realised volatility: local vs global \label{Figure1}}\label{fig:Figure1}
 \end{figure}
 
-To make your graphs look extra nice in latex world, you could use Tikz
-device. Replace dev - `png' with `tikz' in the chunk below. Notice this
-makes the build time longer and produces extra tex files - so if you are
-comfortable with this, set your device to Tikz and try it out:
+Figure \ref{Figure1} shows that the big spikes are shared with global
+markets, which points to a common driver. The 2026 spike is the
+exception: the ACWI stays calm (12.0\% for the year), while MSCI EM
+(25.2\%) and the emerging market fear gauge VXEEM (an average of 29.8,
+against 18.2 for the VIX) surge. The current rise in local volatility is
+therefore an emerging market risk-off event rather than a global one.
+With ZAR volatility at its lowest level in the sample, the currency is
+not the channel either.
 
 \begin{figure}[H]
 
@@ -370,333 +439,252 @@ comfortable with this, set your device to Tikz and try it out:
 
 }
 
-\caption{Caption Here \label{Figure2}}\label{fig:Figure2}
+\caption{GJR-GARCH(1,1) conditional volatility (annualised) \label{Figure2}}\label{fig:Figure2}
 \end{figure}
 
-To reference the plot above, add a ``\textbackslash label'\,' after the
-caption in the chunk heading, as done above. Then reference the plot as
-such: As can be seen, Figures \ref{Figure1} and \ref{Figure2} are
-excellent, with Figure \ref{Figure2} being particularly aesthetically
-pleasing due to its device setting of Tikz. The nice thing now is that
-it correctly numbers all your figures (and sections or tables) and will
-update if it moves. The links are also dynamic.
-
-I very strongly suggest using ggplot2 (ideally in combination with
-dplyr) using the ggtheme package to change the themes of your figures.
-
-Also note the information that I have placed above the chunks in the
-code chunks for the figures. You can edit any of these easily - visit
-the Rmarkdown webpage for more information.
-
-\section{Splitting a page}\label{splitting-a-page}
-
-You can also very easily split a page using built-in Pandoc formatting.
-I comment this out in the code (as this has caused issues building the
-pdf for some users - which I presume to be a Pandoc issue), but you are
-welcome to try it out yourself by commenting out the following section
-in your Rmd file.
-
-\section{\texorpdfstring{Methodology
-\label{Meth}}{Methodology }}\label{methodology}
-
-\subsection{Subsection}\label{subsection}
-
-Ideally do not overuse subsections. It equates to bad
-writing.\footnote{This is an example of a footnote by the way. Something
-  that should also not be overused.}
-
-\subsection{Math section}\label{math-section}
-
-Equations should be written as such:
-
-\begin{align}
-\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \label{eq1} \\
-\int_{x = 1}^{\infty}x_{i} = 1 \notag
-\end{align}
-
-If you would like to see the equations as you type in Rmarkdown, use \$
-symbols instead (see this for yourself by adjusted the equation):
-
-\[
-\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \\
-\int_{x = 1}^{\infty}x_{i} = 1
-\]
-
-Note the equation above - this should appear in math in Rstudio. Writing
-nice math requires practice. Note I used a forward slashes to make a
-space in the equations. I can also align equations using \textbf{\&},
-and set to numbering only the first line. Now I will have to type
-``begin equation'\,' which is a native \LaTeX command. Here follows a
-more complicated equation that you want aligned (using \& sign) and
-numbered:
-
-\begin{align}
-    y_t &= c + B(L) y_{t-1} + e_t   \label{eq2}    \\ \notag
-    e_t &= H_t^{1/2}  z_t ; \quad z_t \sim  N(0,I_N) \quad \& \quad H_t = D_tR_tD_t \\ \notag
-        D_t^2 &= {\sigma_{1,t}, \dots, \sigma_{N,t}}   \\ \notag
-        \sigma_{i,t}^2 &= \gamma_i+\kappa_{i,t}  v_{i, t-1}^2 +\eta_i  \sigma_{i, t-1}^2, \quad \forall i \\ \notag
-        R_{t, i, j} &= {diag(Q_{t, i, j}}^{-1}) . Q_{t, i, j} . diag(Q_{t, i, j}^{-1})  \\ \notag
-        Q_{t, i, j} &= (1-\alpha-\beta)  \bar{Q} + \alpha  z_t  z_t'  + \beta  Q_{t, i, j} \notag
-\end{align}
-
-Note that in \ref{eq2} I have aligned the equations by the equal signs.
-I also want only one tag, and I create spaces using ``quads'\,'.
-
-See if you can figure out how to do complex math using the two examples
-provided in \ref{eq1} and \ref{eq2}.
-
-\section{Including an external plot}\label{including-an-external-plot}
-
-You can also include plots produced outside of your Rmarkdown file using
-the package \emph{knitr}
-
-See below chunk:
-
-\section{Results}\label{results}
-
-Tables can be included as follows. Use the \emph{xtable} (or kable)
-package for tables. Table placement = H implies Latex tries to place the
-table Here, and not on a new page (there are, however, very many ways to
-skin this cat. Luckily there are many forums online!).
+The GARCH results confirm this picture. Ljung-Box tests on squared
+returns strongly reject the null of no ARCH effects
+(\citeproc{ref-engle1982}{Engle, 1982}) (\(p < 0.001\)), which justifies
+a volatility model. For the Capped SWIX, \(\beta = 0.90\) and
+\(\gamma = 0.13\) are highly significant, while \(\alpha\) is close to
+zero: volatility responds to bad news, not good news. Persistence is
+high (0.965 locally and 0.973 for the ACWI), so shocks fade slowly. The
+standardised residuals show no remaining ARCH effects. The local and
+global conditional volatilities in Figure \ref{Figure2} have a
+correlation of 0.85.
 
 \begin{table}[H]
 \centering
-\begin{tabular}{rrrrrrrrrrrr}
+\caption{Volatility in each regime relative to full-sample volatility \label{tab2}} 
+\begingroup\footnotesize
+\begin{tabular}{lrrrrrr}
   \hline
- & mpg & cyl & disp & hp & drat & wt & qsec & vs & am & gear & carb \\ 
+Period & Capped SWIX & Top 40 & MidCaps & SmallCaps & ACWI & EM \\ 
   \hline
-1 & 21.00 & 6.00 & 160.00 & 110.00 & 3.90 & 2.62 & 16.46 & 0.00 & 1.00 & 4.00 & 4.00 \\ 
-  2 & 21.00 & 6.00 & 160.00 & 110.00 & 3.90 & 2.88 & 17.02 & 0.00 & 1.00 & 4.00 & 4.00 \\ 
-  3 & 22.80 & 4.00 & 108.00 & 93.00 & 3.85 & 2.32 & 18.61 & 1.00 & 1.00 & 4.00 & 1.00 \\ 
-  4 & 21.40 & 6.00 & 258.00 & 110.00 & 3.08 & 3.21 & 19.44 & 1.00 & 0.00 & 3.00 & 1.00 \\ 
-  5 & 18.70 & 8.00 & 360.00 & 175.00 & 3.15 & 3.44 & 17.02 & 0.00 & 0.00 & 3.00 & 2.00 \\ 
+High Global EPU & 1.16 & 1.13 & 1.22 & 1.19 & 1.20 & 1.15 \\ 
+  High Oil Vol & 1.30 & 1.25 & 1.18 & 1.19 & 1.28 & 1.26 \\ 
+  High VIX & 1.33 & 1.32 & 1.30 & 1.39 & 1.48 & 1.31 \\ 
+  Low Global EPU & 1.02 & 0.95 & 0.93 & 0.90 & 0.90 & 0.96 \\ 
+  Low Oil Vol & 0.77 & 0.80 & 0.85 & 0.89 & 0.75 & 0.79 \\ 
+  Low VIX & 0.76 & 0.76 & 0.83 & 0.73 & 0.53 & 0.70 \\ 
    \hline
 \end{tabular}
-\caption{Short Table Example \label{tab1}} 
-\end{table}
-
-To reference calculations \textbf{in text}, \emph{do this:} From table
-\ref{tab1} we see the average value of mpg is 20.98.
-
-Including tables that span across pages, use the following (note that I
-add below the table: ``continue on the next page'\,'). This is a neat
-way of splitting your table across a page.
-
-Use the following default settings to build your own possibly long
-tables. Note that the following will fit on one page if it can, but
-cleanly spreads over multiple pages:
-
-\begingroup\fontsize{12pt}{13pt}\selectfont
-\begin{longtable}{rrrrrrrrrrr}
-\caption{Long Table Example} \\ 
-  \toprule
-mpg & cyl & disp & hp & drat & wt & qsec & vs & am & gear & carb \\ 
-  \hline 
-\endhead 
-\hline 
-{\footnotesize Continued on next page} 
-\endfoot 
-\endlastfoot 
- \midrule
-21.00 & 6.00 & 160.00 & 110.00 & 3.90 & 2.62 & 16.46 & 0.00 & 1.00 & 4.00 & 4.00 \\ 
-  21.00 & 6.00 & 160.00 & 110.00 & 3.90 & 2.88 & 17.02 & 0.00 & 1.00 & 4.00 & 4.00 \\ 
-  22.80 & 4.00 & 108.00 & 93.00 & 3.85 & 2.32 & 18.61 & 1.00 & 1.00 & 4.00 & 1.00 \\ 
-  21.40 & 6.00 & 258.00 & 110.00 & 3.08 & 3.21 & 19.44 & 1.00 & 0.00 & 3.00 & 1.00 \\ 
-  18.70 & 8.00 & 360.00 & 175.00 & 3.15 & 3.44 & 17.02 & 0.00 & 0.00 & 3.00 & 2.00 \\ 
-  18.10 & 6.00 & 225.00 & 105.00 & 2.76 & 3.46 & 20.22 & 1.00 & 0.00 & 3.00 & 1.00 \\ 
-  14.30 & 8.00 & 360.00 & 245.00 & 3.21 & 3.57 & 15.84 & 0.00 & 0.00 & 3.00 & 4.00 \\ 
-  24.40 & 4.00 & 146.70 & 62.00 & 3.69 & 3.19 & 20.00 & 1.00 & 0.00 & 4.00 & 2.00 \\ 
-  22.80 & 4.00 & 140.80 & 95.00 & 3.92 & 3.15 & 22.90 & 1.00 & 0.00 & 4.00 & 2.00 \\ 
-  19.20 & 6.00 & 167.60 & 123.00 & 3.92 & 3.44 & 18.30 & 1.00 & 0.00 & 4.00 & 4.00 \\ 
-  17.80 & 6.00 & 167.60 & 123.00 & 3.92 & 3.44 & 18.90 & 1.00 & 0.00 & 4.00 & 4.00 \\ 
-  16.40 & 8.00 & 275.80 & 180.00 & 3.07 & 4.07 & 17.40 & 0.00 & 0.00 & 3.00 & 3.00 \\ 
-  17.30 & 8.00 & 275.80 & 180.00 & 3.07 & 3.73 & 17.60 & 0.00 & 0.00 & 3.00 & 3.00 \\ 
-  15.20 & 8.00 & 275.80 & 180.00 & 3.07 & 3.78 & 18.00 & 0.00 & 0.00 & 3.00 & 3.00 \\ 
-  10.40 & 8.00 & 472.00 & 205.00 & 2.93 & 5.25 & 17.98 & 0.00 & 0.00 & 3.00 & 4.00 \\ 
-  10.40 & 8.00 & 460.00 & 215.00 & 3.00 & 5.42 & 17.82 & 0.00 & 0.00 & 3.00 & 4.00 \\ 
-  14.70 & 8.00 & 440.00 & 230.00 & 3.23 & 5.34 & 17.42 & 0.00 & 0.00 & 3.00 & 4.00 \\ 
-  32.40 & 4.00 & 78.70 & 66.00 & 4.08 & 2.20 & 19.47 & 1.00 & 1.00 & 4.00 & 1.00 \\ 
-  30.40 & 4.00 & 75.70 & 52.00 & 4.93 & 1.61 & 18.52 & 1.00 & 1.00 & 4.00 & 2.00 \\ 
-  33.90 & 4.00 & 71.10 & 65.00 & 4.22 & 1.83 & 19.90 & 1.00 & 1.00 & 4.00 & 1.00 \\ 
-  21.50 & 4.00 & 120.10 & 97.00 & 3.70 & 2.46 & 20.01 & 1.00 & 0.00 & 3.00 & 1.00 \\ 
-  15.50 & 8.00 & 318.00 & 150.00 & 2.76 & 3.52 & 16.87 & 0.00 & 0.00 & 3.00 & 2.00 \\ 
-  15.20 & 8.00 & 304.00 & 150.00 & 3.15 & 3.44 & 17.30 & 0.00 & 0.00 & 3.00 & 2.00 \\ 
-  13.30 & 8.00 & 350.00 & 245.00 & 3.73 & 3.84 & 15.41 & 0.00 & 0.00 & 3.00 & 4.00 \\ 
-  19.20 & 8.00 & 400.00 & 175.00 & 3.08 & 3.85 & 17.05 & 0.00 & 0.00 & 3.00 & 2.00 \\ 
-  27.30 & 4.00 & 79.00 & 66.00 & 4.08 & 1.94 & 18.90 & 1.00 & 1.00 & 4.00 & 1.00 \\ 
-  26.00 & 4.00 & 120.30 & 91.00 & 4.43 & 2.14 & 16.70 & 0.00 & 1.00 & 5.00 & 2.00 \\ 
-  30.40 & 4.00 & 95.10 & 113.00 & 3.77 & 1.51 & 16.90 & 1.00 & 1.00 & 5.00 & 2.00 \\ 
-  15.80 & 8.00 & 351.00 & 264.00 & 4.22 & 3.17 & 14.50 & 0.00 & 1.00 & 5.00 & 4.00 \\ 
-  19.70 & 6.00 & 145.00 & 175.00 & 3.62 & 2.77 & 15.50 & 0.00 & 1.00 & 5.00 & 6.00 \\ 
-  15.00 & 8.00 & 301.00 & 335.00 & 3.54 & 3.57 & 14.60 & 0.00 & 1.00 & 5.00 & 8.00 \\ 
-  21.40 & 4.00 & 121.00 & 109.00 & 4.11 & 2.78 & 18.60 & 1.00 & 1.00 & 4.00 & 2.00 \\ 
-   \bottomrule
-\end{longtable}
 \endgroup
-
-\hfill
-
-\subsection{Huxtable}\label{huxtable}
-
-Huxtable is a very nice package for making working with tables between
-Rmarkdown and Tex easier.
-
-This cost some adjustment to the Tex templates to make it work, but it
-now works nicely.
-
-See documentation for this package
-\href{https://hughjonesd.github.io/huxtable/huxtable.html}{here}. A
-particularly nice addition of this package is for making the printing of
-regression results a joy (see
-\href{https://hughjonesd.github.io/huxtable/huxtable.html\#creating-a-regression-table}{here}).
-Here follows an example:
-
-If you are eager to use huxtable, comment out the Huxtable table in the
-Rmd template, and uncomment the colortbl package in your Rmd's root.
-
-Note that I do not include this in the ordinary template, as some latex
-users have complained it breaks when they build their Rmds (especially
-those using tidytex - I don't have this problem as I have the full
-Miktex installed on mine). Up to you, but I strongly recommend
-installing the package manually and using huxtable. To make this work,
-uncomment the \emph{Adding additional latex packages} part in yaml at
-the top of the Rmd file. Then comment out the huxtable example in the
-template below this line. Reknit, and enjoy.
-
- 
-\begin{table}[ht]
-\begin{centerbox}
-\begin{threeparttable}
-\captionsetup{justification=centering,singlelinecheck=off}
-\caption{Regression Output}
- \label{Reg01}
-\setlength{\tabcolsep}{0pt}
-\begin{tabular}{l l l l}
-
-
-\hhline{>{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}-}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}c!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\centering \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont } \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{c!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\centering \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont Reg1} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{c!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\centering \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont Reg2} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{c!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\centering \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont Reg3} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{>{\huxb{255, 255, 255}{0.4}}->{\huxb{0, 0, 0}{0.4}}->{\huxb{0, 0, 0}{0.4}}->{\huxb{0, 0, 0}{0.4}}-}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (Intercept)} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont -2256.361 ***} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 5763.668 ***} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 4045.333 ***} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont } \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (13.055)\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (740.556)\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (286.205)\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont carat} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 7756.426 ***} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont \hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 7765.141 ***} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont } \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (14.067)\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont \hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (14.009)\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont depth} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont \hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont -29.650 *\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont -102.165 ***} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont } \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont \hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (11.990)\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (4.635)\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{>{\huxb{255, 255, 255}{0.4}}->{\huxb{0, 0, 0}{0.4}}->{\huxb{0, 0, 0}{0.4}}->{\huxb{0, 0, 0}{0.4}}-}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont N} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 53940\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 53940\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 53940\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont R2} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 0.849\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 0.000\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 0.851\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{>{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}-}
-\arrayrulecolor{black}
-\end{tabular}
-\begin{tablenotes}[flushleft]
-\item[] *** p $<$ 0.001; ** p $<$ 0.01; * p $<$ 0.05.
-\end{tablenotes}
-\end{threeparttable}\par\end{centerbox}
-
 \end{table}
- 
 
-FYI - R also recently introduced the gt package, which is worthwhile
-exploring too.
+Table \ref{tab2} shows how offshore stress spills over into local
+markets. In high-VIX months, local volatility runs 30-39\% above normal,
+and in months of high oil volatility it runs 18-30\% above normal. In
+calm months it falls 15-27\% below normal. The link with global policy
+uncertainty is weaker (13-22\%), partly because the EPU index has
+trended upwards, so its high months cluster in 2025 and 2026. These are
+associations, not proof of causation, but they show clearly that
+offshore stress changes the risk of holding local equities.
 
-\section{Lists}\label{lists}
+\subsection{How does SafeCore navigate
+volatility?}\label{how-does-safecore-navigate-volatility}
 
-To add lists, simply using the following notation
+\begin{figure}[H]
 
-\begin{itemize}
-\item
-  This is really simple
+{\centering \includegraphics{Question1_files/figure-latex/Figure3-1} 
 
-  \begin{itemize}
-  \tightlist
-  \item
-    Just note the spaces here - writing in R you have to sometimes be
-    pedantic about spaces\ldots{}
-  \end{itemize}
-\item
-  Note that Rmarkdown notation removes the pain of defining
-  \LaTeX environments!
-\end{itemize}
+}
 
-\section{Conclusion}\label{conclusion}
+\caption{Rolling three-month volatility: SafeCore, benchmark and Low-Volatility index \label{Figure3}}\label{fig:Figure3}
+\end{figure}
 
-I hope you find this template useful. Remember, stackoverflow is your
-friend - use it to find answers to questions. Feel free to write me a
-mail if you have any questions regarding the use of this package. To
-cite this package, simply type citation(``Texevier'') in Rstudio to get
-the citation for Katzke (\citeproc{ref-Texevier}{2017}) (Note that
-uncited references in your bibtex file will not be included in
-References).
+SafeCore does not dampen volatility. Figure \ref{Figure3} shows its
+volatility sitting on top of the benchmark's throughout, and in 2026 it
+is slightly higher (21.1\% against 20.7\%). In high-VIX months its
+volatility rises by the same amount as the benchmark's (a ratio of 1.31
+against 1.33). Table \ref{tab3} shows that since September 2020 its tail
+risk, measured by Value-at-Risk (VaR) and Expected Shortfall (ES), and
+its maximum drawdown (18.5\% against 14.1\%) are worse than the
+benchmark's.
+
+\begin{table}[H]
+\centering
+\caption{Risk and return since September 2020 \label{tab3}} 
+\begingroup\footnotesize
+\begin{tabular}{lrrr}
+  \hline
+Measure & SafeCore & Capped SWIX & Low Vol (rebuilt) \\ 
+  \hline
+Annualised return & 0.175 & 0.162 & 0.119 \\ 
+  Annualised volatility & 0.169 & 0.164 & 0.149 \\ 
+  Sharpe ratio (Rf = 0) & 1.040 & 0.989 & 0.802 \\ 
+  Historical VaR (95\%, daily) & -0.017 & -0.016 & -0.015 \\ 
+  Modified ES (95\%, daily) & -0.024 & -0.024 & -0.023 \\ 
+  Maximum drawdown & 0.185 & 0.141 & 0.150 \\ 
+   \hline
+\end{tabular}
+\endgroup
+\end{table}
+
+The fund's strength is returns, not risk control. It has a higher Sharpe
+ratio, a beta of 0.95, captures 103\% of the benchmark's up months and
+96\% of its down months, and returned more than the benchmark in
+high-VIX months. In other words, SafeCore has a benchmark-like risk
+profile with a stock-selection edge. The Low-Volatility index shows what
+a risk ballast would cost: about 1.5 to 2 percentage points less
+volatility, but also about 5\% less return a year over this period.
+
+\begin{figure}[H]
+
+{\centering \includegraphics{Question1_files/figure-latex/Figure4-1} 
+
+}
+
+\caption{SafeCore: sector weight vs share of portfolio risk \label{Figure4}}\label{fig:Figure4}
+\end{figure}
+
+Figure \ref{Figure4} shows where SafeCore's risk comes from. Until 2019
+its risk roughly followed its weights, led by Industrials and
+Financials. By August 2026, Resources hold 40\% of the weight but
+contribute 68\% of the risk. Three gold and precious metal miners
+dominate: AngloGold Ashanti (12\% weight, 28\% of risk), Gold Fields
+(7.5\%, 17\%) and Valterra Platinum (4.4\%, 10\%). These stocks are both
+volatile and highly correlated with each other, so together they drive
+the portfolio. SafeCore has effectively become a single-commodity bet,
+which leaves it exposed to exactly the offshore and commodity shocks
+identified above.
+
+\begin{table}[H]
+\centering
+\caption{Average factor exposure (weighted average z-score), August 2020 to August 2026 \label{tab4}} 
+\begingroup\footnotesize
+\begin{tabular}{lrrrrrr}
+  \hline
+Factor & Capped SWIX & SafeCore & LowVol & Momentum & Quality & Value \\ 
+  \hline
+Earnings Quality & -0.00 & 0.13 & -0.06 & 0.00 & 0.05 & 0.16 \\ 
+  Growth & -0.03 & 0.02 & -0.06 & 0.01 & 0.09 & -0.02 \\ 
+  Momentum & -0.03 & 0.06 & -0.09 & 0.33 & -0.08 & -0.09 \\ 
+  Own Low-Vol & 0.32 & 0.34 & 0.54 & 0.31 & 0.35 & 0.26 \\ 
+  Own Momentum & 0.12 & 0.21 & 0.06 & 0.34 & 0.08 & 0.10 \\ 
+  Value & 0.02 & 0.11 & -0.12 & -0.07 & -0.16 & 0.31 \\ 
+  Volatility Sensitivity & -0.04 & -0.03 & -0.01 & -0.10 & 0.02 & -0.08 \\ 
+   \hline
+\end{tabular}
+\endgroup
+\end{table}
+
+Table \ref{tab4} places SafeCore's factor exposures next to the
+benchmark and four strategy indexes. Relative to the Capped SWIX,
+SafeCore leans towards Earnings Quality and Value, has a positive and
+recently growing Momentum tilt (as it rides the gold rally), and has no
+Low-Volatility tilt. Its Low-Volatility exposure is almost identical to
+the benchmark's, and has turned slightly negative in 2026.
+
+Our own Momentum score agrees well with the third-party score (an
+average monthly rank correlation of 0.61), so momentum is a robust
+signal. Our Low-Volatility score agrees only weakly with the third
+party's ``Volatility Sensitivity'' score (0.11). The Low-Volatility
+index helps us judge which measure to trust: on our realised-volatility
+score it stands far above the benchmark (0.54 against 0.32), but on the
+third-party score the two are almost the same. The third-party score
+therefore appears to measure something else, such as sensitivity to
+market-wide volatility shocks rather than a stock's own volatility. For
+a mandate that aims to manage volatility, our realised-volatility score
+is the more useful one.
+
+\subsection{Has the alpha opportunity improved since
+2020?}\label{has-the-alpha-opportunity-improved-since-2020}
+
+\begin{figure}[H]
+
+{\centering \includegraphics{Question1_files/figure-latex/Figure5-1} 
+
+}
+
+\caption{Measures of the alpha opportunity since 2020 (peer fund data end in October 2025) \label{Figure5}}\label{fig:Figure5}
+\end{figure}
+
+Figure \ref{Figure5} tracks the alpha opportunity. Dispersion was
+highest in the recovery after COVID. It then fell steadily to a low in
+2024, when the average daily weighted CSV was only 1.63\%: correlations
+were low, but there was little difference between stocks to exploit.
+Since then dispersion has recovered to 2.03\% in 2026, its highest level
+since 2022, while correlation remains moderate (0.22). This combination
+of stocks moving apart without moving together makes 2026 the best
+environment for stock-picking in four years. Weighted and unweighted
+dispersion are now almost equal, which shows that the spread is coming
+from the large caps, especially the gold miners pulling away from the
+rest of the market.
+
+\begin{figure}[H]
+
+{\centering \includegraphics{Question1_files/figure-latex/Figure6-1} 
+
+}
+
+\caption{DCC-GARCH(1,1) conditional correlations between super-sectors \label{Figure6}}\label{fig:Figure6}
+\end{figure}
+
+The DCC model in Figure \ref{Figure6} adds a sector view. The
+multivariate ARCH test rejects the null of no conditional
+heteroskedasticity (\(p < 0.001\)), and the DCC parameters are
+significant (\(a = 0.020\), \(b = 0.929\)), so correlations are
+time-varying and persistent: a shock to correlations lasts for months,
+not days. Financials and Industrials move closely together (around
+0.55), as both depend on the domestic economy. Resources are the local
+market's diversifier, with correlations of only 0.2 to 0.3 with the
+other sectors. This diversification was strongest during the
+commodity-led decouplings of 2022 and mid-2025, when sector dispersion,
+and so the alpha opportunity, was highest. It weakens during global
+stress episodes, when all three correlations rise together.
+
+\begin{table}[H]
+\centering
+\caption{Alpha-opportunity measures in high and low macro regimes, relative to their average \label{tab5}} 
+\begingroup\footnotesize
+\begin{tabular}{lrrrrrr}
+  \hline
+Driver & CSV high & CSV low & Corr. high & Corr. low & Peer disp. high & Peer disp. low \\ 
+  \hline
+Global EPU & 1.04 & 0.92 & 0.97 & 0.95 & 1.20 & 0.94 \\ 
+  MOVE (bond vol) & 1.02 & 1.09 & 1.20 & 0.95 & 1.07 & 1.05 \\ 
+  Oil vol & 1.07 & 0.94 & 1.17 & 0.93 & 1.05 & 1.04 \\ 
+  VIX & 1.17 & 0.92 & 1.23 & 0.97 & 1.18 & 0.86 \\ 
+  ZAR vol & 1.09 & 1.02 & 1.08 & 0.81 & 0.96 & 1.03 \\ 
+   \hline
+\end{tabular}
+\endgroup
+\end{table}
+
+Table \ref{tab5} links the alpha opportunity to global conditions. In
+high-VIX months dispersion rises by 17\%, but stocks also become 23\%
+more correlated. Global stress therefore creates a two-sided
+opportunity: there is more to gain from picking the right stocks, but
+more of the market moves together, so the gains go to managers who are
+positioned correctly on the macro theme. This is why peer fund returns
+spread out more when the VIX or global policy uncertainty is high (by
+18\% and 20\%). Oil volatility raises both dispersion and correlation,
+as commodity shocks split the market into Resources and the rest. Bond
+market volatility (MOVE) raises correlation without raising dispersion,
+which is the least helpful combination for stock-pickers. The sample is
+short (73 months), so these regime effects should be read as indicative.
+
+\section{\texorpdfstring{Conclusion
+\label{Conclusion}}{Conclusion }}\label{conclusion}
+
+Local volatility has not risen steadily, but it is high again in 2026,
+and it is driven mainly from offshore. It shares its major spikes with
+global markets, but the 2026 episode tracks emerging markets, and
+periods of high global stress raise local volatility by about a third.
+SafeCore has delivered alpha, but it does nothing to dampen this
+volatility, and its risk is now concentrated in a handful of gold
+miners. The opportunity to add value through stock selection has
+improved to its best level since 2022, yet the macro regimes that create
+this opportunity are the same ones that make stocks fall together.
+
+We therefore recommend keeping SafeCore's stock-selection process, but
+adding a deliberate risk ballast: a cap on the share of risk any one
+sector can contribute, a tilt towards low-volatility stocks using our
+realised-volatility score, and regular monitoring of offshore stress
+indicators such as the VIX, VXEEM and oil volatility. This would let the
+fund keep its edge while limiting the damage when global storms reach
+local shores.
 
 \newpage
 
@@ -705,30 +693,27 @@ References).
 
 \protect\phantomsection\label{refs}
 \begin{CSLReferences}{1}{1}
-\bibitem[\citeproctext]{ref-fama1997}
-Fama, E.F. \& French, K.R. 1997. Industry costs of equity. \emph{Journal
-of financial economics}. 43(2):153--193.
+\bibitem[\citeproctext]{ref-bollerslev1986}
+Bollerslev, T. 1986. Generalized autoregressive conditional
+heteroskedasticity. \emph{Journal of Econometrics}. 31(3):307--327.
 
-\bibitem[\citeproctext]{ref-grinold2000}
-Grinold, R.C. \& Kahn, R.N. 2000. Active portfolio management.
+\bibitem[\citeproctext]{ref-engle2002}
+Engle, R. 2002. Dynamic conditional correlation: A simple class of
+multivariate generalized autoregressive conditional heteroskedasticity
+models. \emph{Journal of Business \& Economic Statistics}.
+20(3):339--350.
 
-\bibitem[\citeproctext]{ref-Texevier}
-Katzke, N.F. 2017. \emph{{Texevier}: {P}ackage to create elsevier
-templates for rmarkdown}. Stellenbosch, South Africa: Bureau for
-Economic Research.
+\bibitem[\citeproctext]{ref-engle1982}
+Engle, R.F. 1982. Autoregressive conditional heteroscedasticity with
+estimates of the variance of united kingdom inflation.
+\emph{Econometrica}. 50(4):987--1007.
+
+\bibitem[\citeproctext]{ref-glosten1993}
+Glosten, L.R., Jagannathan, R. \& Runkle, D.E. 1993. On the relation
+between the expected value and the volatility of the nominal excess
+return on stocks. \emph{The Journal of Finance}. 48(5):1779--1801.
 
 \end{CSLReferences}
-
-\section*{Appendix}\label{appendix}
-\addcontentsline{toc}{section}{Appendix}
-
-\subsection*{Appendix A}\label{appendix-a}
-\addcontentsline{toc}{subsection}{Appendix A}
-
-Some appendix information here
-
-\subsection*{Appendix B}\label{appendix-b}
-\addcontentsline{toc}{subsection}{Appendix B}
 
 \bibliography{Tex/ref}
 

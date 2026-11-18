@@ -1,52 +1,29 @@
 ---
-# IMPORTANT: Change settings here, but DO NOT change the spacing AT ALL.
+# IMPORTANT: Change settings here, but DO NOT change the spacing.
 # Remove comments and add values where applicable.
 # The descriptions below should be self-explanatory
 
-title: "Helping You Write Academic Papers in R using Texevier"
+title: "Riding Offshore Storms: Volatility, Risk Concentration and the Alpha Opportunity in South African Equities"
 #subtitle: "This will appear as Right Header"
 
 documentclass: "elsarticle"
 
 # --------- Thesis title (Optional - set to FALSE by default).
-# You can move the details below around as you please.
 Thesis_FP: FALSE
-# Entry1: "An unbelievable study with a title spanning multiple lines."
-# Entry2: "\\textbf{Some Guy}" # textbf for bold
-# Entry3: "A thesis submitted toward the degree of Doctor of Philosophy"
-# Uni_Logo: Tex/Logo.png # Place a logo in the indicated location (from your root, e.g. defaults to ~/Tex/Logo.png) and uncomment this line. Leave uncommented for no image
-# Logo_width: 0.3 # If using a logo - use this to set width (size) of image
-# Entry4: "Under the supervision of: \\vfill Prof. Joe Smith and Dr. Frank Smith"
-# Entry5: "Stellenbosch University"
-# Entry6: April 2020
-# Entry7:
-# Entry8:
 
 # --------- Front Page
-# Comment: ----- Follow this pattern for up to 5 authors
 AddTitle: TRUE # Use FALSE when submitting to peer reviewed platform. This will remove author names.
-Author1: "Jane Doe^[__Contributions:__  \\newline _The authors would like to thank no institution for money donated to this project. Thank you sincerely._]"  # First Author - note the thanks message displayed as an italic footnote of first page.
-Ref1: "Some Institution, Cape Town, South Africa" # First Author's Affiliation
-Email1: "nfkatzke\\@gmail.com" # First Author's Email address
-
-Author2: "John Smith"
-Ref2: "Some other Institution, Cape Town, South Africa"
-Email2: "John\\@gmail.com"
-CommonAffiliation_12: TRUE # If Author 1 and 2 have a common affiliation. Works with _13, _23, etc.
-
-Author3: "John Doe"
-Email3: "Joe\\@gmail.com"
+Author1: "Kieron Maseko (26572982)"  # First Author
+Ref1: "Stellenbosch University, Stellenbosch, South Africa" # First Author's Affiliation
+Email1: "26572982\\@sun.ac.za" # First Author's Email address
 
 CorrespAuthor_1: TRUE  # If corresponding author is author 3, e.g., use CorrespAuthor_3: TRUE
 
 # Comment out below to remove both. JEL Codes only given if keywords also given.
-keywords: "Multivariate GARCH \\sep Kalman Filter \\sep Copula" # Use \\sep to separate
-JELCodes: "L250 \\sep L100"
+keywords: "Volatility \\sep GARCH \\sep DCC \\sep Dispersion \\sep Factor Exposure" # Use \\sep to separate
+JELCodes: "G11 \\sep G12 \\sep C58"
 
 # ----- Manage headers and footers:
-#BottomLFooter: $Title$
-#BottomCFooter:
-#TopLHeader: \leftmark # Adds section name at topleft. Remove comment to add it.
 BottomRFooter: "\\footnotesize Page \\thepage" # Add a '#' before this line to remove footer.
 addtoprule: TRUE
 addfootrule: TRUE               # Use if footers added. Add '#' to remove line.
@@ -55,22 +32,14 @@ addfootrule: TRUE               # Use if footers added. Add '#' to remove line.
 margin: 2.3 # Sides
 bottom: 2 # bottom
 top: 2.5 # Top
-HardSet_layout: TRUE # Hard-set the spacing of words in your document. This will stop LaTeX squashing text to fit on pages, e.g.
-# This is done by hard-setting the spacing dimensions. Set to FALSE if you want LaTeX to optimize this for your paper.
+HardSet_layout: TRUE # Hard-set the spacing of words in your document.
 
 # --------- Line numbers
 linenumbers: FALSE # Used when submitting to journal
 
 # ---------- References settings:
-# You can download cls format here: https://www.zotero.org/ - simply search for your institution. You can also edit and save cls formats here: https://editor.citationstyles.org/about/
-# Hit download, store it in Tex/ folder, and change reference below - easy.
 bibliography: Tex/ref.bib       # Do not edit: Keep this naming convention and location.
 csl: Tex/harvard-stellenbosch-university.csl # referencing format used.
-# By default, the bibliography only displays the cited references. If you want to change this, you can comment out one of the following:
-#nocite: '@*' # Add all items in bibliography, whether cited or not
-# nocite: |  # add specific references that aren't cited
-#  @grinold2000
-#  @Someoneelse2010
 
 # ---------- General:
 RemovePreprintSubmittedTo: TRUE  # Removes the 'preprint submitted to...' at bottom of titlepage
@@ -81,10 +50,6 @@ fontsize: 11pt                  # Set fontsize
 linestretch: 1.2                # Set distance between lines.
 link-citations: TRUE            # This creates dynamic links to the papers in reference list.
 
-### Adding additional latex packages:
-# header-includes:
-#    - \usepackage{colortbl} # Add additional packages here.
-
 output:
   pdf_document:
     keep_tex: TRUE
@@ -92,30 +57,306 @@ output:
     fig_width: 3.5 # Adjust default figure sizes. This can also be done in the chunks of the text.
     fig_height: 3.5
 abstract: |
-  Abstract to be written here. The abstract should not be too long and should provide the reader with a good understanding what you are writing about. Academic papers are not like novels where you keep the reader in suspense. To be effective in getting others to read your paper, be as open and concise about your findings here as possible. Ideally, upon reading your abstract, the reader should feel he / she must read your paper in entirety.
+  This report asks whether local equity volatility has risen, how our flagship SafeCore fund copes with it, and whether stock-pickers have more room to add value since 2020. Local volatility has not trended up since 2015, but it comes in episodes, and 2026 is the most volatile year outside of COVID. It moves closely with global volatility (a GARCH volatility correlation of 0.85), but the 2026 spike tracks emerging markets rather than developed markets. In months of high offshore stress, local volatility runs about a third above normal. SafeCore earns alpha but does nothing to dampen volatility, and its risk is now concentrated in gold miners: Resources hold 40% of the weight but 68% of the risk. Dispersion between stocks has recovered to its highest level since 2022, but in stress periods higher dispersion comes with higher correlation. We recommend keeping SafeCore's stock-selection edge while adding a deliberate risk ballast.
 ---
 
 <!-- First: Set your default preferences for chunk options: -->
 
-<!-- If you want a chunk's code to be printed, set echo = TRUE. message = FALSE stops R printing ugly package loading details in your final paper too. I also suggest setting warning = FALSE and checking for warnings in R, else you might find ugly warnings in your paper. -->
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 6, fig.height = 5, fig.pos="H", fig.pos = 'H')
-# Note: Include = FALSE implies the code is executed, but not printed in your pdf.
-# warning and message = FALSE implies ugly messages and warnings are removed from your pdf.
-# These should be picked up when you execute the command chunks (code sections below) in your rmd, not printed in your paper!
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 6, fig.height = 5, fig.pos = "H")
 
-# Lets load in example data, and see how this can be stored and later called from your 'data' folder.
-if(!require("tidyverse")) install.packages("tidyverse")
-library(tidyverse)
-Example_data <- Texevier::Ex_Dat
+library(rmsfuns)
+pacman::p_load(tidyverse, lubridate, tbl2xts, xts, PerformanceAnalytics, RcppRoll, fmxdat, rugarch, rmgarch, xtable)
 
-# Notice that as you are working in a .Rproj file (I am assuming you are) - the relative paths of your directories start at your specified root.
-# This means that when working in a .Rproj file, you never need to use getwd() - it is assumed as your base root automatically.
-write_rds(Example_data, file = "data/Example_data.rds")
+# Data (each question folder holds its own copy in data/)
+Uncertainty_Indexes <- read_rds("data/Econ_Uncertainty_Indexes.rds")
+Implied_Vol <- read_rds("data/Implied_Vol_Indexes.rds")
+Idx_Daily <- read_rds("data/Index_Returns_Daily.rds")
+Local_Cncy_Vol_Index <- read_rds("data/LCL_Currency_Vol_Index.rds") %>%
+  mutate(TRI = ifelse(TRI < 1, TRI * 100, TRI))           # 2021-2026 prints divided by 100
+Commods <- read_rds("data/Commodities.rds")
+MSCI <- read_rds("data/MSCI_Indexes.rds")
+SafeCore <- read_rds("data/SafeCore.rds")
+Factor_Scores <- read_rds("data/Factor_Scores.rds")
+Local_Index_Constituents <- read_rds("data/Index_Constituents.rds")
+Active_Managers <- read_rds("data/Active_Managers.rds")
+Stock_Rets <- read_rds("data/Stock_Returns_Daily.rds") %>%
+  select(date, Tickers, Return = Returns) %>%
+  mutate(Return = ifelse(abs(Return) > 0.5, NA, Return))  # data errors
 
+SafeCore <- SafeCore %>%
+  mutate(Sector = ifelse(is.na(Sector) & Tickers %in% c("PAN", "VAL"), "Resources", Sector)) %>%
+  group_by(date) %>% mutate(Weight = Weight / sum(Weight)) %>% ungroup()
+
+StartDate <- ymd(20150101)
+
+# Helpers used throughout
+Winsor <- function(x) { q <- quantile(x, c(0.01, 0.99), na.rm = TRUE); pmin(pmax(x, q[1]), q[2]) }
+Top_Q <- function(df) df %>% filter(Level > quantile(Level, 0.8)) %>% pull(YearMonth)
+Bot_Q <- function(df) df %>% filter(Level < quantile(Level, 0.2)) %>% pull(YearMonth)
+
+Print_Table <- function(df, Caption, Digits = 2, Size = "\\footnotesize") {
+  print.xtable(xtable(df, caption = Caption, digits = Digits),
+               floating = TRUE, table.placement = "H", comment = FALSE,
+               include.rownames = FALSE, caption.placement = "top", size = Size)
+}
 ```
 
+```{r functions, include=FALSE}
+# All functions used in this write-up (the same functions as in the code/ folder),
+# defined here so the document knits on its own.
+
+# Annualised realised volatility per calendar year, one column per series
+# df: tidy frame with columns date, Name, Return (daily simple returns)
+Vol_Table <- function(df, Scale = 252) {
+
+  df %>%
+    mutate(Year = format(date, "%Y")) %>%
+    group_by(Year, Name) %>%
+    summarise(Vol = sd(Return, na.rm = TRUE) * sqrt(Scale), .groups = "drop") %>%
+    spread(Name, Vol)
+
+}
+
+# Rolling annualised volatility plot
+# df: tidy frame with columns date, Name, Return (daily simple returns)
+Roll_Vol_Plot <- function(df, Width = 63, Scale = 252, Title = "", Subtitle = "") {
+
+  df_plot <-
+    df %>%
+    group_by(Name) %>%
+    arrange(date) %>%
+    mutate(RollVol = RcppRoll::roll_sd(Return, n = Width, fill = NA, align = "right") * sqrt(Scale)) %>%
+    ungroup() %>%
+    filter(!is.na(RollVol))
+
+  g <-
+    df_plot %>%
+    ggplot() +
+    geom_line(aes(date, RollVol, color = Name), alpha = 0.8, linewidth = 0.8) +
+    labs(title = Title, subtitle = Subtitle, x = "", y = "Annualised volatility") +
+    fmxdat::theme_fmx(title.size = fmxdat::ggpts(30), subtitle.size = fmxdat::ggpts(25),
+                      legend.size = fmxdat::ggpts(25), axis.size = fmxdat::ggpts(25))
+
+  fmxdat::finplot(g, y.pct = TRUE, y.pct_acc = 1, x.date.type = "%Y", x.date.dist = "1 year")
+
+}
+
+# Fit an AR(1)-GARCH(1,1) to one return series and return the fit
+# Return: xts of demeaned daily log returns (one column)
+GARCH_Fit <- function(Return, Model = "gjrGARCH", Dist = "sstd") {
+
+  spec <- rugarch::ugarchspec(
+    variance.model = list(model = Model, garchOrder = c(1, 1)),
+    mean.model = list(armaOrder = c(1, 0), include.mean = TRUE),
+    distribution.model = Dist)
+
+  rugarch::ugarchfit(spec = spec, data = Return, solver = "hybrid")
+
+}
+
+# Compare the four GARCH variants used in Prac 6 on information criteria
+GARCH_Compare <- function(Return, Dist = "sstd") {
+
+  Models <- c("sGARCH", "gjrGARCH", "eGARCH", "apARCH")
+  model.list <- list()
+  for (p in seq_along(Models)) {
+    model.list[[p]] <- GARCH_Fit(Return, Model = Models[p], Dist = Dist)
+  }
+  fit.mat <- sapply(model.list, rugarch::infocriteria)
+  colnames(fit.mat) <- Models
+  rownames(fit.mat) <- rownames(rugarch::infocriteria(model.list[[1]]))
+  fit.mat
+
+}
+
+# Extract annualised conditional volatility from a fit as a tidy frame
+GARCH_Sigma <- function(Fit, Name, Scale = 252) {
+
+  rugarch::sigma(Fit) %>%
+    tbl2xts::xts_tbl() %>%
+    setNames(c("date", "Sigma")) %>%
+    mutate(date = as.Date(date), Sigma = Sigma * sqrt(Scale), Name = Name)
+
+}
+
+# Stratification (Prac 2 Bonus): volatility of each series during selected months
+# relative to its full-period volatility.
+# Idxs: tidy frame with date, YearMonth, Name, Return (winsorised daily returns)
+# YMs: vector of YearMonths in the stressed regime; Alias: label for the regime
+Perf_comparisons <- function(Idxs, YMs, Alias, Scale = 252) {
+
+  Unconditional_SD <-
+    Idxs %>%
+    group_by(Name) %>%
+    summarise(Full_SD = sd(Return, na.rm = TRUE) * sqrt(Scale), .groups = "drop")
+
+  Idxs %>%
+    filter(YearMonth %in% YMs) %>%
+    group_by(Name) %>%
+    summarise(SD = sd(Return, na.rm = TRUE) * sqrt(Scale), .groups = "drop") %>%
+    left_join(Unconditional_SD, by = "Name") %>%
+    mutate(Ratio = SD / Full_SD, Period = Alias)
+
+}
+
+# Daily index returns rebuilt from constituent weights and returns
+# (weights rescaled to sum to 1 each day)
+Index_From_Constituents <- function(Constituents, Indexes) {
+
+  Constituents %>%
+    filter(Index %in% Indexes, !is.na(Return)) %>%
+    group_by(Index, date) %>%
+    mutate(weight = weight / sum(weight, na.rm = TRUE)) %>%
+    summarise(Return = sum(weight * Return, na.rm = TRUE), .groups = "drop") %>%
+    rename(Name = Index)
+
+}
+
+# Component contribution to portfolio SD (Prac 2) at one rebalance date
+# Wts: tidy weights (date, Tickers, Sector, Weight); Rets: tidy daily returns (date, Tickers, Return)
+Risk_Contribution <- function(RebDate, Wts, Rets, LookBack = 252) {
+
+  w <- Wts %>% filter(date == RebDate) %>% arrange(Tickers)
+
+  R <-
+    Rets %>%
+    filter(Tickers %in% w$Tickers, date <= RebDate) %>%
+    group_by(Tickers) %>% filter(row_number() > n() - LookBack) %>% ungroup() %>%
+    tbl_xts(cols_to_xts = Return, spread_by = Tickers)
+
+  R[is.na(R)] <- 0
+  w <- w %>% filter(Tickers %in% colnames(R))
+  R <- R[, w$Tickers]
+
+  Contrib <- StdDev(R, weights = w$Weight / sum(w$Weight), portfolio_method = "component")
+
+  tibble(date = RebDate, Tickers = w$Tickers, Sector = w$Sector,
+         Weight = w$Weight / sum(w$Weight),
+         Risk_Share = as.numeric(Contrib$pct_contrib_StdDev),
+         Port_SD = as.numeric(Contrib$StdDev) * sqrt(252))
+
+}
+
+# Own Momentum and Low-Volatility scores from daily price behaviour
+# Momentum: 6-month return skipping the most recent month (t-126 to t-21 trading days)
+# Low-Vol : minus the 6-month (126-day) annualised realised volatility (higher = calmer stock)
+# Both standardised cross-sectionally each month and capped at +-3
+Own_Factor_Scores <- function(Rets, MinObs = 126) {
+
+  Raw <-
+    Rets %>%
+    arrange(Tickers, date) %>%
+    group_by(Tickers) %>%
+    filter(n() > MinObs) %>%
+    mutate(Mom_Raw = lag(RcppRoll::roll_prod(1 + Return, n = 105, fill = NA, align = "right"), 21) - 1,
+           Vol_Raw = RcppRoll::roll_sd(Return, n = 126, fill = NA, align = "right") * sqrt(252)) %>%
+    ungroup() %>%
+    mutate(YM = format(date, "%Y%m")) %>%
+    group_by(YM) %>% filter(date == max(date)) %>% ungroup()     # last trading day of each month
+
+  Zscore <- function(x) { z <- (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE); pmin(pmax(z, -3), 3) }
+
+  Raw %>%
+    filter(!is.na(Mom_Raw), !is.na(Vol_Raw)) %>%
+    group_by(YM) %>%
+    mutate(Own_Momentum = Zscore(Mom_Raw), Own_LowVol = Zscore(-Vol_Raw)) %>%
+    ungroup() %>%
+    select(YM, Tickers, Own_Momentum, Own_LowVol)
+
+}
+
+# Daily cross-sectional volatility (dispersion) of index constituents
+# Weighted:   sqrt( sum w_i (R_i - Rbar_w)^2 ),  Rbar_w = sum w_i R_i
+# Unweighted: plain cross-sectional standard deviation
+CSV_Calc <- function(Constituents) {
+
+  Constituents %>%
+    filter(!is.na(Return)) %>%
+    group_by(date) %>%
+    mutate(w = weight / sum(weight)) %>%
+    summarise(Weighted = sqrt(sum(w * (Return - sum(w * Return))^2)),
+              Unweighted = sd(Return), .groups = "drop")
+
+}
+
+# Average pairwise correlation of the N largest constituents over a trailing window
+Avg_Pairwise_Cor <- function(RebDate, Constituents, N = 40, LookBack = 63) {
+
+  Top <-
+    Constituents %>% filter(date == RebDate) %>%
+    arrange(desc(weight)) %>% head(N) %>% pull(Tickers)
+
+  R <-
+    Constituents %>%
+    filter(Tickers %in% Top, date <= RebDate, date > RebDate - 2 * LookBack) %>%
+    select(date, Tickers, Return) %>%
+    spread(Tickers, Return) %>%
+    tail(LookBack) %>%
+    select(-date)
+
+  C <- cor(R, use = "pairwise.complete.obs")
+  tibble(date = RebDate, Avg_Cor = mean(C[upper.tri(C)], na.rm = TRUE))
+
+}
+
+# Stratification of a monthly alpha-opportunity measure by macro regime:
+# average of each measure in the top and bottom quintile months of a driver, relative to its full-sample mean
+# Measures: tidy (YearMonth, Measure, Value); Driver: (YearMonth, Level)
+Regime_Means <- function(Measures, Driver, Alias) {
+
+  Hi <- Driver %>% filter(Level > quantile(Level, 0.8, na.rm = TRUE)) %>% pull(YearMonth)
+  Lo <- Driver %>% filter(Level < quantile(Level, 0.2, na.rm = TRUE)) %>% pull(YearMonth)
+
+  Measures %>%
+    group_by(Measure) %>%
+    summarise(High = mean(Value[YearMonth %in% Hi], na.rm = TRUE) / mean(Value, na.rm = TRUE),
+              Low  = mean(Value[YearMonth %in% Lo], na.rm = TRUE) / mean(Value, na.rm = TRUE),
+              .groups = "drop") %>%
+    mutate(Driver = Alias)
+
+}
+```
+
+```{r data_prep, include=FALSE}
+# ---- Part A objects ----
+Local_Rets <- Idx_Daily %>% filter(Tickers %in% c("J433", "J200", "J201", "J202")) %>%
+  select(date, Name, Return = Returns)
+Global_Rets <- MSCI %>% filter(Name %in% c("MSCI_ACWI", "MSCI_EM")) %>% arrange(date) %>%
+  group_by(Name) %>% mutate(Return = TRI / lag(TRI) - 1) %>% ungroup() %>%
+  filter(date >= StartDate, !is.na(Return)) %>% select(date, Name, Return)
+Vol_Rets <- bind_rows(Local_Rets, Global_Rets)
+
+VIX_M <- Implied_Vol %>% filter(Name == "VIX", date >= StartDate) %>%
+  mutate(YearMonth = format(date, "%Y%m")) %>% group_by(YearMonth) %>% summarise(Level = mean(TRI))
+EPU_M <- Uncertainty_Indexes %>% filter(Name == "EPUCGLCP", date >= StartDate) %>%
+  mutate(YearMonth = format(date, "%Y%m")) %>% group_by(YearMonth) %>% summarise(Level = dplyr::last(TRI))
+Oil_M <- Commods %>% filter(Name == "Oil_Brent", date >= StartDate) %>% arrange(date) %>%
+  mutate(Ret = TRI / lag(TRI) - 1, YearMonth = format(date, "%Y%m")) %>%
+  group_by(YearMonth) %>% summarise(Level = sd(Ret, na.rm = TRUE) * sqrt(252))
+
+# ---- Part B objects ----
+SC_Wts <- SafeCore %>% filter(date >= ymd(20141231))
+W_xts <- SC_Wts %>% select(date, Tickers, Weight) %>% tbl_xts(cols_to_xts = Weight, spread_by = Tickers)
+W_xts[is.na(W_xts)] <- 0
+R_xts <- Stock_Rets %>% filter(Tickers %in% colnames(W_xts)) %>% tbl_xts(cols_to_xts = Return, spread_by = Tickers)
+R_xts[is.na(R_xts)] <- 0
+R_xts <- R_xts[, colnames(W_xts)]
+SC_Port <- rmsfuns::Safe_Return.portfolio(R = R_xts, weights = W_xts, lag_weights = TRUE,
+                                          contribution = TRUE, verbose = TRUE, value = 1, geometric = TRUE)
+SC_Daily <- SC_Port$returns %>% xts_tbl() %>% setNames(c("date", "Return")) %>%
+  mutate(date = as.Date(date), Name = "SafeCore")
+Strat_Idx <- Index_From_Constituents(Local_Index_Constituents, c("Capped SWIX", "LowVol", "Momentum", "Quality", "Value"))
+Compare_Rets <- bind_rows(SC_Daily,
+  Idx_Daily %>% filter(Tickers == "J433") %>% select(date, Return = Returns) %>% mutate(Name = "Capped_SWIX"),
+  Strat_Idx %>% filter(Name == "LowVol") %>% mutate(Name = "LowVol_Rebuilt")) %>%
+  filter(date >= StartDate)
+
+# ---- Part C objects ----
+SWIX_Cons <- Local_Index_Constituents %>% filter(Index == "Capped SWIX") %>%
+  mutate(Return = ifelse(abs(Return) > 0.5, NA, Return))
+CSV <- CSV_Calc(SWIX_Cons)
+```
 
 <!-- ############################## -->
 <!-- # Start Writing here: -->
@@ -123,301 +364,255 @@ write_rds(Example_data, file = "data/Example_data.rds")
 
 # Introduction \label{Introduction}
 
-References are to be made as follows: @fama1997[p. 33] and @grinold2000 Such authors could also be referenced in brackets [@grinold2000] and together [@fama1997 \& @grinold2000]. Source the reference code from scholar.google.com by clicking on ``cite'' below article name. Then select BibTeX at the bottom of the Cite window, and proceed to copy and paste this code into your ref.bib file, located in the directory's Tex folder. Open this file in Rstudio for ease of management, else open it in your preferred Tex environment. Add and manage your article details here for simplicity - once saved, it will self-adjust in your paper.
+Offshore shocks have dominated recent markets: tariff wars, record global policy uncertainty and sharp swings in oil and gold. This report asks three questions for our investment committee. First, has volatility on the local exchange increased, and does it simply mirror the global experience? Second, how well does our flagship fund, SafeCore, handle that volatility, where does its risk come from, and what factor tilts does it carry? Third, has the opportunity for active managers to add value (alpha) improved since 2020, and how does it move with global conditions?
 
-> I suggest renaming the top line after \@article, as done in the template ref.bib file, to something more intuitive for you to remember. Do not change the rest of the code. Also, be mindful of the fact that bib references from google scholar may at times be incorrect. Reference Latex forums for correct bibtex notation.
+We follow the standard approach in financial econometrics: measure volatility in several ways (realised, implied and model-based), test whether stress regimes change the behaviour of returns, and judge a portfolio by how it adds up risk, not only by its weights. Section \ref{Data} describes the data and method, Section \ref{Results} reports the results for each question, and Section \ref{Conclusion} concludes with a recommendation.
 
-To reference a section, you have to set a label using ``\\label'' in R, and then reference it in-text as e.g. referencing a later section, Section \ref{Meth}.
+# Data and Methodology \label{Data}
 
-Writing in Rmarkdown is surprizingly easy - see [this website](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf) cheatsheet for a summary on writing Rmd writing tips.
+We use daily total returns for the Capped SWIX (our benchmark), the Top 40, Mid-cap and Small-cap indexes from 2015, and the MSCI All Country World (ACWI) and Emerging Markets (EM) indexes as the global comparison (in USD). Fear gauges include the VIX, V2X and VXEEM implied volatility indexes, the global Economic Policy Uncertainty index (EPU), the MOVE bond volatility index, and USD-ZAR implied volatility (SAVIUSD). SafeCore's monthly holdings are combined with daily stock returns, and Capped SWIX constituent weights (from August 2020) are used for dispersion, correlations and factor exposures.
 
-# Data  {-}
+A few data choices matter. Daily stock returns above +50% or below -50% are treated as data errors and removed. SafeCore's weights only sum to between 79% and 100%, so they are rescaled to 100%. SAVIUSD contains values recorded divided by 100 between 2021 and 2026, which we correct. Finally, the official Low-Volatility index only starts in 2024, so we rebuild it from its constituents back to August 2020; the rebuilt series has a correlation of 0.999 with the official index over their common sample.
 
-Notice how I used the curly brackets and dash to remove the numbering of the data section.
-
-Discussion of data should be thorough with a table of statistics and ideally a figure.
-
-In your tempalte folder, you will find a Data and a Code folder. In order to keep your data files neat, store all of them in your Data folder. Also, I strongly suggest keeping this Rmd file for writing and executing commands, not writing out long pieces of data-wrangling. In the example below, I simply create a ggplot template for scatter plot consistency. I suggest keeping all your data in a data folder.
-
-<!-- The following is a code chunk. It must have its own unique name (after the r), or no name. After the comma follows commands for R which are self-explanatory. By default, the code and messages will not be printed in your pdf, just the output: -->
-
-```{r Figure1, warning =  FALSE, fig.align = 'center', fig.cap = "Caption Here \\label{Figure1}", fig.height = 3, fig.width = 6, dev = 'png'}
-  # This is just a random plot to show you a plot. This is done if the getwd() does not point to your Template's directory.
-  # Set WD below to your project's working directory.
-
-  g <-
-  ggplot(data = mtcars) +
-  geom_point(aes(x = disp, y = hp, color = cyl)) +
-  theme_bw() +
-  # theme(legend.position = "none") +
-  theme(plot.title = element_text(size = 10)) +
-  theme(axis.title = element_text(size = 10),
-        axis.title.x = element_text()) +
-  labs(y = "y-axis", x = "x-axis", title = "Some amazing plot")
-
-g
-
-```
-
-To make your graphs look extra nice in latex world, you could use Tikz device. Replace dev - 'png' with 'tikz' in the chunk below. Notice this makes the build time longer and produces extra tex files - so if you are comfortable with this, set your device to Tikz and try it out:
-
-```{r Figure2, warning =  FALSE, fig.align = 'center', fig.cap = "Caption Here \\label{Figure2}", fig.height = 3, fig.width = 6, dev = 'png'}
-
-ExampleData <- read_rds( "data/Example_data.rds")
-
-source("code/Example_Plot_Scatter.R") # Load a function from your 'code' folder. This e.g. plots scatters to your own preferences.
-source( "code/Data_Create.R") #
-
-ExampleData <- Data_Create(N = 100) # Same as the ExampleData loaded above - this is just a function to create the stored data.
-
-g <- Example_Plot_Scatter(DataInput = ExampleData,
-                          X = "Height_Score",
-                          Y = "Weight_Score",
-                          Z = "Agility_Score",
-                          Theme = theme_bw(), # run ?ggthemes for other themes.
-                          Title = "", # I prefer to use the caption set above.
-                          Ylab = "Height",
-                          Xlab = "Lenght",
-                          LegendTitle = "Agility",
-                          TitleSize = 10,
-                          LabSize = 10)
-
-g
-
-# Although the functions above are really simple, the principle is simple: containing calculations and data wrangling in their own functions will make this template much cleaner and more manageable.
-# When you start working, delete these meaningless functions and replace with your own...
-
-```
-
-To reference the plot above, add a ``\\label'' after the caption in the chunk heading, as done above. Then reference the plot as such: As can be seen, Figures \ref{Figure1}  and \ref{Figure2} are excellent, with Figure \ref{Figure2} being particularly aesthetically pleasing due to its device setting of Tikz. The nice thing now is that it correctly numbers all your figures (and sections or tables) and will update if it moves. The links are also dynamic.
-
-I very strongly suggest using ggplot2 (ideally in combination with dplyr) using the ggtheme package to change the themes of your figures.
-
-Also note the information that I have placed above the chunks in the code chunks for the figures. You can edit any of these easily - visit the Rmarkdown webpage for more information.
-
-# Splitting a page
-
-You can also very easily split a page using built-in Pandoc formatting. I comment this out in the code (as this has caused issues building the pdf for some users - which I presume to be a Pandoc issue), but you are welcome to try it out yourself by commenting out the following section in your Rmd file.
-
-
-<!-- :::::: {.columns data-latex="[T]"} -->
-<!-- ::: {.column data-latex="{0.7\textwidth}"} -->
-<!-- ```{r, echo=FALSE, fig.width=4, fig.height=4} -->
-<!-- par(mar = c(4, 4, .2, .1)) -->
-<!-- plot(cars, pch = 19) -->
-<!-- ``` -->
-<!-- ::: -->
-<!-- ::: {.column data-latex="{0.05\textwidth}"} -->
-<!-- \ -->
-<!-- ::: -->
-<!-- ::: {.column data-latex="{0.2\textwidth}"} -->
-<!-- \scriptsize -->
-
-<!-- ## Data {-} -->
-<!-- The figure on the left-hand side shows the `cars` data. -->
-
-<!-- Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do -->
-<!-- eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut -->
-<!-- enim ad minim veniam, quis nostrud exercitation ullamco laboris -->
-<!-- nisi ut aliquip ex ea commodo consequat. -->
-<!-- ::: -->
-<!-- :::::: -->
-
-
-
-#  Methodology \label{Meth}
-
-## Subsection
-Ideally do not overuse subsections. It equates to bad writing.^[This is an example of a footnote by the way. Something that should also not be overused.]
-
-## Math section
-
-Equations should be written as such:
+**Volatility.** Realised volatility is the annualised standard deviation of daily returns, $\sigma = \sqrt{252}\, sd(r_t)$, measured per calendar year and over a rolling 63-day (three-month) window. To separate signal from noise we fit an AR(1)-GJR-GARCH(1,1) model with a skewed-t distribution [@bollerslev1986; @glosten1993]:
 
 \begin{align}
-\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \label{eq1} \\
-\int_{x = 1}^{\infty}x_{i} = 1 \notag
+r_t &= \mu + \phi r_{t-1} + \varepsilon_t, \qquad \varepsilon_t = \sqrt{h_t}\, z_t \notag \\
+h_t &= \omega + \alpha \varepsilon_{t-1}^2 + \gamma I_{t-1}\varepsilon_{t-1}^2 + \beta h_{t-1}, \qquad I_{t-1} = 1 \text{ if } \varepsilon_{t-1} < 0 \label{eq1}
 \end{align}
 
-If you would like to see the equations as you type in Rmarkdown, use $ symbols instead (see this for yourself by adjusted the equation):
+Here $\alpha$ is the impact of a new shock, $\gamma$ the extra impact of bad news (the leverage effect) and $\alpha + \beta + \gamma/2$ the persistence of volatility. GJR was chosen over the standard GARCH on information criteria; the more complex eGARCH and apARCH models improved the fit only marginally.
 
-$$
-\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \\
-\int_{x = 1}^{\infty}x_{i} = 1
-$$
+**Stratification.** To link local markets to offshore stress, we flag the months in the top (bottom) 20% of the VIX, global EPU and Brent oil volatility. For each index we compare volatility in those months with its full-sample volatility; a ratio above one means the index is more volatile in that regime.
 
-Note the equation above - this should appear in math in Rstudio. Writing nice math requires practice. Note I used a forward slashes to make a space in the equations. I can also align equations using  __\&__, and set to numbering only the first line. Now I will have to type ``begin equation'' which is a native \LaTeX command. Here follows a more complicated equation that you want aligned (using \& sign) and numbered:
+**Portfolio risk.** SafeCore's daily returns are calculated from its month-end weights, applied from the next trading day. Each stock's share of portfolio risk is its component contribution to portfolio volatility, $w_i (\Sigma w)_i / \sigma_p^2$, using a trailing one-year covariance matrix at each year-end.
 
+**Factor scores.** We build our own Momentum score (the six-month return excluding the latest month) and Low-Volatility score (minus the six-month realised volatility), standardise both across stocks each month, and compare them with the third-party scores. A portfolio's factor exposure is the weighted average score of its holdings.
+
+**Alpha opportunity.** Dispersion is the weighted cross-sectional volatility of Capped SWIX constituents:
 
 \begin{align}
-	y_t &= c + B(L) y_{t-1} + e_t   \label{eq2}    \\ \notag
-	e_t &= H_t^{1/2}  z_t ; \quad z_t \sim  N(0,I_N) \quad \& \quad H_t = D_tR_tD_t \\ \notag
-		D_t^2 &= {\sigma_{1,t}, \dots, \sigma_{N,t}}   \\ \notag
-		\sigma_{i,t}^2 &= \gamma_i+\kappa_{i,t}  v_{i, t-1}^2 +\eta_i  \sigma_{i, t-1}^2, \quad \forall i \\ \notag
-		R_{t, i, j} &= {diag(Q_{t, i, j}}^{-1}) . Q_{t, i, j} . diag(Q_{t, i, j}^{-1})  \\ \notag
-		Q_{t, i, j} &= (1-\alpha-\beta)  \bar{Q} + \alpha  z_t  z_t'  + \beta  Q_{t, i, j} \notag
+CSV_t = \sqrt{\sum_{i} w_{i,t} \left(R_{i,t} - \bar{R}_t\right)^2}, \qquad \bar{R}_t = \sum_i w_{i,t} R_{i,t} \label{eq2}
 \end{align}
 
-Note that in \ref{eq2} I have aligned the equations by the equal signs. I also want only one tag, and I create spaces using ``quads''.
+We weight by index weight because SafeCore is measured against a cap-weighted benchmark: the alpha it can capture lies where the weight is, and an unweighted measure lets small, illiquid stocks dominate. We pair this with the average pairwise correlation of the 40 largest constituents over a rolling 63-day window, the spread of peer fund returns, and a DCC-GARCH(1,1) model of the correlations between the Financials, Industrials and Resources sectors [@engle2002].
 
-See if you can figure out how to do complex math using the two examples provided in \ref{eq1} and \ref{eq2}.
+# Results \label{Results}
 
-<!-- $$ -->
-<!-- This is a commented out section in the writing part. -->
-<!-- Comments are created by highlighting text, amnd pressing CTL+C -->
-<!-- \\begin{align} -->
-<!-- \\beta = \\alpha^2 -->
-<!-- \end{align} -->
-<!-- $$ -->
+## Has local volatility increased, and does it mirror the global experience?
 
+Table \ref{tab1} shows that local volatility has no steady upward trend since 2015. It comes in episodes: 2015-16, the COVID crash in 2020, 2022, and again in 2026. Even so, 2026 is the most volatile year outside of COVID for both the Capped SWIX (20.7%) and the Top 40 (22.4%). The local market is also structurally more volatile than the global market, by about two to six percentage points a year.
 
-# Including an external plot
-
-You can also include plots produced outside of your Rmarkdown file using the package *knitr*
-
-See below chunk:
-
-```{r, out.width = "205px", fig.cap=figures("Some Figure"), eval = F}
-
-knitr::include_graphics("YourFigureLocation/Logo.png")
-
+```{r tab1, results = 'asis'}
+Vol_Table(Vol_Rets) %>%
+  mutate(across(-Year, ~ round(. * 100, 1))) %>%
+  select(Year, `Capped SWIX`, `Top 40`, MidCaps, SmallCaps, ACWI = MSCI_ACWI, EM = MSCI_EM) %>%
+  Print_Table(Caption = "Annualised realised volatility (\\%) by calendar year (2026 to September) \\label{tab1}", Digits = 1)
 ```
 
-
-# Results
-
-Tables can be included as follows. Use the _xtable_ (or kable) package for tables. Table placement = H implies Latex tries to place the table Here, and not on a new page (there are, however, very many ways to skin this cat. Luckily there are many forums online!).
-
-
-```{r ShortTable, results = 'asis'}
-
-library(xtable)
-data <- mtcars[1:5,] %>% tibble::as_tibble()
-
-table <- xtable(data, caption = "Short Table Example \\label{tab1}")
-  print.xtable(table,
-             # tabular.environment = "longtable",
-             floating = TRUE,
-             table.placement = 'H',
-             # scalebox = 0.3,
-             comment = FALSE,
-             caption.placement = 'bottom'
-             )
-
+```{r Figure1, fig.align = 'center', fig.cap = "Rolling three-month realised volatility: local vs global \\label{Figure1}", fig.height = 3.5, fig.width = 6.5, dev = 'png'}
+Roll_Vol_Plot(Vol_Rets %>% filter(Name %in% c("Capped SWIX", "MSCI_ACWI", "MSCI_EM")) %>%
+                mutate(Name = recode(Name, MSCI_ACWI = "MSCI ACWI", MSCI_EM = "MSCI EM")), Width = 63)
 ```
 
-To reference calculations __in text__, _do this:_ From table \ref{tab1} we see the average value of mpg is `r mean(mtcars[1:5,]$mpg)`.
+Figure \ref{Figure1} shows that the big spikes are shared with global markets, which points to a common driver. The 2026 spike is the exception: the ACWI stays calm (12.0% for the year), while MSCI EM (25.2%) and the emerging market fear gauge VXEEM (an average of 29.8, against 18.2 for the VIX) surge. The current rise in local volatility is therefore an emerging market risk-off event rather than a global one. With ZAR volatility at its lowest level in the sample, the currency is not the channel either.
 
-Including tables that span across pages, use the following (note that I add below the table: ``continue on the next page''). This is a neat way of splitting your table across a page.
-
-Use the following default settings to build your own possibly long tables. Note that the following will fit on one page if it can, but cleanly spreads over multiple pages:
-
-```{r LongTable, results = 'asis'}
-
-library(xtable)
-
-data = mtcars %>% tibble::as_tibble()
-  addtorow          <- list()
-  addtorow$pos      <- list()
-  addtorow$pos[[1]] <- c(0)
-  addtorow$command  <- c(paste("\\hline \n",
-                               "\\endhead \n",
-                               "\\hline \n",
-                               "{\\footnotesize Continued on next page} \n",
-                               "\\endfoot \n",
-                               "\\endlastfoot \n",sep=""))
-table <- xtable(data, caption = "Long Table Example")
-  print.xtable(table,
-             tabular.environment = "longtable",
-             floating = FALSE, # Leave this as is.
-             table.placement = 'H', # Leave this as is.
-             booktabs = T, # Aesthetics
-             include.rownames = FALSE,  # Typically you don't want this in a table.
-             add.to.row = addtorow, # For adding the Continued on next page part...
-             comment = FALSE,
-             caption.placement = 'top',  # Where do you want the caption?
-             size="\\fontsize{12pt}{13pt}\\selectfont"  # Size of text in table..
-             )
-# See https://cran.r-project.org/web/packages/xtable/vignettes/xtableGallery.pdf for table inspiration
+```{r garch_fit, include=FALSE}
+GARCH_Rets <- Vol_Rets %>% filter(Name %in% c("Capped SWIX", "MSCI_ACWI")) %>%
+  mutate(Name = gsub(" ", "_", Name)) %>%
+  group_by(Name) %>% arrange(date) %>%
+  mutate(dlogret = log(1 + Return)) %>% mutate(scaledret = dlogret - mean(dlogret, na.rm = TRUE)) %>% ungroup()
+xts_GARCH <- GARCH_Rets %>% tbl_xts(cols_to_xts = scaledret, spread_by = Name)
+Fit_SWIX <- GARCH_Fit(na.omit(xts_GARCH[, "Capped_SWIX"]))
+Fit_ACWI <- GARCH_Fit(na.omit(xts_GARCH[, "MSCI_ACWI"]))
+Sigmas <- bind_rows(GARCH_Sigma(Fit_SWIX, "Capped SWIX"), GARCH_Sigma(Fit_ACWI, "MSCI ACWI"))
+Sigma_Cor <- Sigmas %>% spread(Name, Sigma) %>% na.omit() %>% summarise(cor(`Capped SWIX`, `MSCI ACWI`)) %>% pull()
 ```
 
-\hfill
-
-<!-- hfill can be used to create a space, like here between text and table. -->
-
-
-## Huxtable
-
-Huxtable is a very nice package for making working with tables between Rmarkdown and Tex easier.
-
-This cost some adjustment to the Tex templates to make it work, but it now works nicely.
-
-See documentation for this package [here](https://hughjonesd.github.io/huxtable/huxtable.html). A particularly nice addition of this package is for making the printing of regression results a joy (see [here](https://hughjonesd.github.io/huxtable/huxtable.html#creating-a-regression-table)). Here follows an example:
-
-
-If you are eager to use huxtable, comment out the Huxtable table in the Rmd template, and uncomment the colortbl package in your Rmd's root.
-
-Note that I do not include this in the ordinary template, as some latex users have complained it breaks when they build their Rmds (especially those using tidytex - I don't have this problem as I have the full Miktex installed on mine). Up to you, but I strongly recommend installing the package manually and using huxtable. To make this work, uncomment the _Adding additional latex packages_ part in yaml at the top of the Rmd file. Then comment out the huxtable example in the template below this line. Reknit, and enjoy.
-
-```{r, results = 'asis'}
-
-if(!require(huxtable)) install.packages(huxtable)
-library(huxtable)
-data(diamonds, package = 'ggplot2')
-Title <- "Regression Output"
-Label <- "Reg01"
-lm1 <- lm(price ~ carat, diamonds)
-lm2 <- lm(price ~ depth, diamonds)
-lm3 <- lm(price ~ carat + depth, diamonds)
-htab <-
-huxreg(lm1, lm2, lm3,
-                statistics = c(N = "nobs", R2 = "r.squared"),
-                note = "%stars%.") %>%
-  set_caption(Title) %>%
-  set_label(Label)
-# More settings:
-font_size(htab) <- 12
-# Let's change regression names: this is slightly hacky, but works. Comment out this section to see what the default looks like:
-  Names <- c( "Reg1", "Reg2", "Reg3")
-  for(i in 1:length(Names)) {
-    htab[1,][[1+i]] <- Names[i]
-  }
-# Now simply call the table:
-htab
-
+```{r Figure2, fig.align = 'center', fig.cap = "GJR-GARCH(1,1) conditional volatility (annualised) \\label{Figure2}", fig.height = 3.2, fig.width = 6.5, dev = 'png'}
+g <- Sigmas %>% ggplot() +
+  geom_line(aes(date, Sigma, color = Name), linewidth = 0.7, alpha = 0.8) +
+  labs(x = "", y = "Annualised sigma") + fmxdat::theme_fmx()
+fmxdat::finplot(g, y.pct = TRUE, y.pct_acc = 1, x.date.type = "%Y", x.date.dist = "1 year")
 ```
 
-FYI - R also recently introduced the gt package, which is worthwhile exploring too.
+The GARCH results confirm this picture. Ljung-Box tests on squared returns strongly reject the null of no ARCH effects [@engle1982] ($p < 0.001$), which justifies a volatility model. For the Capped SWIX, $\beta = 0.90$ and $\gamma = 0.13$ are highly significant, while $\alpha$ is close to zero: volatility responds to bad news, not good news. Persistence is high (0.965 locally and 0.973 for the ACWI), so shocks fade slowly. The standardised residuals show no remaining ARCH effects. The local and global conditional volatilities in Figure \ref{Figure2} have a correlation of `r round(Sigma_Cor, 2)`.
 
-# Lists
+```{r tab2, results = 'asis'}
+Idxs <- Vol_Rets %>% group_by(Name) %>% mutate(Return = Winsor(Return)) %>% ungroup() %>%
+  mutate(YearMonth = format(date, "%Y%m"))
+bind_rows(
+  Perf_comparisons(Idxs, Top_Q(VIX_M), "High VIX"), Perf_comparisons(Idxs, Bot_Q(VIX_M), "Low VIX"),
+  Perf_comparisons(Idxs, Top_Q(EPU_M), "High Global EPU"), Perf_comparisons(Idxs, Bot_Q(EPU_M), "Low Global EPU"),
+  Perf_comparisons(Idxs, Top_Q(Oil_M), "High Oil Vol"), Perf_comparisons(Idxs, Bot_Q(Oil_M), "Low Oil Vol")) %>%
+  select(Name, Period, Ratio) %>% spread(Name, Ratio) %>%
+  select(Period, `Capped SWIX`, `Top 40`, MidCaps, SmallCaps, ACWI = MSCI_ACWI, EM = MSCI_EM) %>%
+  Print_Table(Caption = "Volatility in each regime relative to full-sample volatility \\label{tab2}")
+```
 
-To add lists, simply using the following notation
+Table \ref{tab2} shows how offshore stress spills over into local markets. In high-VIX months, local volatility runs 30-39% above normal, and in months of high oil volatility it runs 18-30% above normal. In calm months it falls 15-27% below normal. The link with global policy uncertainty is weaker (13-22%), partly because the EPU index has trended upwards, so its high months cluster in 2025 and 2026. These are associations, not proof of causation, but they show clearly that offshore stress changes the risk of holding local equities.
 
-* This is really simple
+## How does SafeCore navigate volatility?
 
-    + Just note the spaces here - writing in R you have to sometimes be pedantic about spaces...
+```{r Figure3, fig.align = 'center', fig.cap = "Rolling three-month volatility: SafeCore, benchmark and Low-Volatility index \\label{Figure3}", fig.height = 3.5, fig.width = 6.5, dev = 'png'}
+Roll_Vol_Plot(Compare_Rets %>% mutate(Name = recode(Name, Capped_SWIX = "Capped SWIX", LowVol_Rebuilt = "Low Vol (rebuilt)")), Width = 63)
+```
 
-* Note that Rmarkdown notation removes the pain of defining \LaTeX environments!
+SafeCore does not dampen volatility. Figure \ref{Figure3} shows its volatility sitting on top of the benchmark's throughout, and in 2026 it is slightly higher (21.1% against 20.7%). In high-VIX months its volatility rises by the same amount as the benchmark's (a ratio of 1.31 against 1.33). Table \ref{tab3} shows that since September 2020 its tail risk, measured by Value-at-Risk (VaR) and Expected Shortfall (ES), and its maximum drawdown (18.5% against 14.1%) are worse than the benchmark's.
 
-# Conclusion
+```{r tab3, results = 'asis'}
+Compare_xts <- Compare_Rets %>% filter(date >= ymd(20200901)) %>%
+  tbl_xts(cols_to_xts = Return, spread_by = Name)
+Risk_Tab <- rbind(table.AnnualizedReturns(Compare_xts, scale = 252),
+                  VaR(Compare_xts, p = 0.95, method = "historical"),
+                  ES(Compare_xts, p = 0.95, method = "modified"),
+                  maxDrawdown(Compare_xts))
+data.frame(Measure = c("Annualised return", "Annualised volatility", "Sharpe ratio (Rf = 0)",
+                       "Historical VaR (95%, daily)", "Modified ES (95%, daily)", "Maximum drawdown"),
+           Risk_Tab, check.names = FALSE) %>%
+  rename(`Capped SWIX` = Capped_SWIX, `Low Vol (rebuilt)` = LowVol_Rebuilt) %>%
+  mutate(across(-Measure, ~ round(., 3))) %>%
+  Print_Table(Caption = "Risk and return since September 2020 \\label{tab3}", Digits = 3)
+```
 
-I hope you find this template useful. Remember, stackoverflow is your friend - use it to find answers to questions. Feel free to write me a mail if you have any questions regarding the use of this package. To cite this package, simply type citation("Texevier") in Rstudio to get the citation for @Texevier (Note that uncited references in your bibtex file will not be included in References).
+The fund's strength is returns, not risk control. It has a higher Sharpe ratio, a beta of 0.95, captures 103% of the benchmark's up months and 96% of its down months, and returned more than the benchmark in high-VIX months. In other words, SafeCore has a benchmark-like risk profile with a stock-selection edge. The Low-Volatility index shows what a risk ballast would cost: about 1.5 to 2 percentage points less volatility, but also about 5% less return a year over this period.
 
-<!-- Make title of bibliography here: -->
-<!-- \newpage -->
+```{r risk_contrib, include=FALSE}
+Reb_Dates <- SC_Wts %>% distinct(date) %>% filter(format(date, "%m") == "12" | date == max(date)) %>%
+  filter(date >= ymd(20151231)) %>% pull(date)
+RC <- map_df(Reb_Dates, ~ Risk_Contribution(.x, SC_Wts, Stock_Rets))
+RC_Sector <- RC %>% group_by(date, Sector) %>%
+  summarise(Weight = sum(Weight), Risk_Share = sum(Risk_Share), .groups = "drop")
+```
+
+```{r Figure4, fig.align = 'center', fig.cap = "SafeCore: sector weight vs share of portfolio risk \\label{Figure4}", fig.height = 3.5, fig.width = 6.5, dev = 'png'}
+g <- RC_Sector %>% rename(`Share of risk` = Risk_Share) %>%
+  gather(Measure, Value, Weight, `Share of risk`) %>%
+  ggplot() + geom_col(aes(format(date, "%y"), Value, fill = Sector), position = "stack") +
+  facet_wrap(~Measure) + labs(x = "", y = "") + fmxdat::theme_fmx()
+fmxdat::finplot(g, y.pct = TRUE)
+```
+
+Figure \ref{Figure4} shows where SafeCore's risk comes from. Until 2019 its risk roughly followed its weights, led by Industrials and Financials. By August 2026, Resources hold 40% of the weight but contribute 68% of the risk. Three gold and precious metal miners dominate: AngloGold Ashanti (12% weight, 28% of risk), Gold Fields (7.5%, 17%) and Valterra Platinum (4.4%, 10%). These stocks are both volatile and highly correlated with each other, so together they drive the portfolio. SafeCore has effectively become a single-commodity bet, which leaves it exposed to exactly the offshore and commodity shocks identified above.
+
+```{r factor_prep, include=FALSE}
+Own_Scores <- Own_Factor_Scores(Stock_Rets %>% filter(!is.na(Return), date >= ymd(20190101)))
+TP_Scores <- Factor_Scores %>% mutate(YM = format(date, "%Y%m")) %>%
+  select(YM, Tickers, Factor, Factor_Value) %>% spread(Factor, Factor_Value)
+Scores <- inner_join(TP_Scores, Own_Scores, by = c("YM", "Tickers"))
+Score_Cors <- Scores %>% group_by(YM) %>%
+  summarise(Mom = cor(Own_Momentum, Momentum, method = "spearman", use = "complete.obs"),
+            LV = cor(Own_LowVol, `Volatility Sensitivity`, method = "spearman", use = "complete.obs"))
+Month_End_Wts <- Local_Index_Constituents %>%
+  filter(Index %in% c("Capped SWIX", "LowVol", "Momentum", "Quality", "Value")) %>%
+  mutate(YM = format(date, "%Y%m")) %>% group_by(Index, YM) %>% filter(date == max(date)) %>%
+  mutate(Weight = weight / sum(weight)) %>% ungroup() %>% select(Portfolio = Index, YM, Tickers, Weight)
+All_Wts <- bind_rows(Month_End_Wts, SafeCore %>% mutate(YM = format(date, "%Y%m"), Portfolio = "SafeCore") %>%
+                       select(Portfolio, YM, Tickers, Weight))
+Exposures <- All_Wts %>% inner_join(Scores, by = c("YM", "Tickers")) %>%
+  gather(Factor, Score, -Portfolio, -YM, -Tickers, -Weight) %>%
+  group_by(Portfolio, YM, Factor) %>%
+  summarise(Exposure = sum(Weight * Score, na.rm = TRUE) / sum(Weight[!is.na(Score)]), .groups = "drop")
+```
+
+```{r tab4, results = 'asis'}
+Exposures %>% group_by(Portfolio, Factor) %>% summarise(Exposure = mean(Exposure), .groups = "drop") %>%
+  spread(Portfolio, Exposure) %>%
+  mutate(Factor = recode(Factor, Own_LowVol = "Own Low-Vol", Own_Momentum = "Own Momentum")) %>%
+  select(Factor, `Capped SWIX`, SafeCore, LowVol, Momentum, Quality, Value) %>%
+  Print_Table(Caption = "Average factor exposure (weighted average z-score), August 2020 to August 2026 \\label{tab4}")
+```
+
+Table \ref{tab4} places SafeCore's factor exposures next to the benchmark and four strategy indexes. Relative to the Capped SWIX, SafeCore leans towards Earnings Quality and Value, has a positive and recently growing Momentum tilt (as it rides the gold rally), and has no Low-Volatility tilt. Its Low-Volatility exposure is almost identical to the benchmark's, and has turned slightly negative in 2026.
+
+Our own Momentum score agrees well with the third-party score (an average monthly rank correlation of `r round(mean(Score_Cors$Mom), 2)`), so momentum is a robust signal. Our Low-Volatility score agrees only weakly with the third party's "Volatility Sensitivity" score (`r round(mean(Score_Cors$LV), 2)`). The Low-Volatility index helps us judge which measure to trust: on our realised-volatility score it stands far above the benchmark (0.54 against 0.32), but on the third-party score the two are almost the same. The third-party score therefore appears to measure something else, such as sensitivity to market-wide volatility shocks rather than a stock's own volatility. For a mandate that aims to manage volatility, our realised-volatility score is the more useful one.
+
+## Has the alpha opportunity improved since 2020?
+
+```{r alpha_prep, include=FALSE}
+Month_Ends <- SWIX_Cons %>% mutate(YM = format(date, "%Y%m")) %>% group_by(YM) %>%
+  filter(date == max(date)) %>% ungroup() %>% distinct(date) %>% filter(date >= ymd(20201130)) %>% pull(date)
+Roll_Cor <- map_df(Month_Ends, ~ Avg_Pairwise_Cor(.x, SWIX_Cons, N = 40, LookBack = 63))
+Peer_Disp <- Active_Managers %>% filter(date >= ymd(20200901)) %>% group_by(date) %>%
+  summarise(Peer_Dispersion = sd(Returns, na.rm = TRUE), .groups = "drop")
+Measures <- bind_rows(
+  CSV %>% mutate(YearMonth = format(date, "%Y%m")) %>% group_by(YearMonth) %>%
+    summarise(Value = mean(Weighted)) %>% mutate(Measure = "Weighted CSV"),
+  Roll_Cor %>% mutate(YearMonth = format(date, "%Y%m"), Measure = "Avg Correlation (Top 40)") %>%
+    select(YearMonth, Value = Avg_Cor, Measure),
+  Peer_Disp %>% mutate(YearMonth = format(date, "%Y%m"), Measure = "Peer Fund Dispersion") %>%
+    select(YearMonth, Value = Peer_Dispersion, Measure))
+```
+
+```{r Figure5, fig.align = 'center', fig.cap = "Measures of the alpha opportunity since 2020 (peer fund data end in October 2025) \\label{Figure5}", fig.height = 5.5, fig.width = 6.5, dev = 'png'}
+g <- Measures %>% mutate(date = ymd(paste0(YearMonth, "01"))) %>%
+  ggplot() + geom_line(aes(date, Value, color = Measure), linewidth = 0.8) +
+  facet_wrap(~Measure, scales = "free_y", ncol = 1) + labs(x = "", y = "") +
+  fmxdat::theme_fmx() + theme(legend.position = "none")
+fmxdat::finplot(g, x.date.type = "%Y", x.date.dist = "1 year")
+```
+
+Figure \ref{Figure5} tracks the alpha opportunity. Dispersion was highest in the recovery after COVID. It then fell steadily to a low in 2024, when the average daily weighted CSV was only 1.63%: correlations were low, but there was little difference between stocks to exploit. Since then dispersion has recovered to 2.03% in 2026, its highest level since 2022, while correlation remains moderate (0.22). This combination of stocks moving apart without moving together makes 2026 the best environment for stock-picking in four years. Weighted and unweighted dispersion are now almost equal, which shows that the spread is coming from the large caps, especially the gold miners pulling away from the rest of the market.
+
+```{r dcc_fit, include=FALSE}
+Sector_xts <- SWIX_Cons %>% filter(!is.na(Return)) %>%
+  group_by(date, SuperSector) %>% summarise(Return = sum(weight * Return) / sum(weight), .groups = "drop") %>%
+  group_by(SuperSector) %>% mutate(dlogret = log(1 + Return), scaledret = dlogret - mean(dlogret)) %>% ungroup() %>%
+  tbl_xts(cols_to_xts = scaledret, spread_by = SuperSector)
+garch11.spec <- ugarchspec(mean.model = list(armaOrder = c(0, 0)),
+                           variance.model = list(garchOrder = c(1, 1), model = "sGARCH"),
+                           distribution.model = "norm")
+dcc.garch11.spec <- dccspec(uspec = multispec(replicate(3, garch11.spec)), dccOrder = c(1, 1), distribution = "mvnorm")
+dcc.fit <- dccfit(dcc.garch11.spec, data = Sector_xts)
+Rhot <- rcor(dcc.fit)
+DCC_Cors <- tibble(date = as.Date(index(Sector_xts)),
+                   `Financials-Industrials` = Rhot[1, 2, ],
+                   `Financials-Resources` = Rhot[1, 3, ],
+                   `Industrials-Resources` = Rhot[2, 3, ])
+```
+
+```{r Figure6, fig.align = 'center', fig.cap = "DCC-GARCH(1,1) conditional correlations between super-sectors \\label{Figure6}", fig.height = 3.2, fig.width = 6.5, dev = 'png'}
+g <- DCC_Cors %>% gather(Pair, Rho, -date) %>%
+  ggplot() + geom_line(aes(date, Rho, color = Pair), linewidth = 0.6) +
+  labs(x = "", y = "Correlation") + fmxdat::theme_fmx()
+fmxdat::finplot(g, x.date.type = "%Y", x.date.dist = "1 year")
+```
+
+The DCC model in Figure \ref{Figure6} adds a sector view. The multivariate ARCH test rejects the null of no conditional heteroskedasticity ($p < 0.001$), and the DCC parameters are significant ($a = 0.020$, $b = 0.929$), so correlations are time-varying and persistent: a shock to correlations lasts for months, not days. Financials and Industrials move closely together (around 0.55), as both depend on the domestic economy. Resources are the local market's diversifier, with correlations of only 0.2 to 0.3 with the other sectors. This diversification was strongest during the commodity-led decouplings of 2022 and mid-2025, when sector dispersion, and so the alpha opportunity, was highest. It weakens during global stress episodes, when all three correlations rise together.
+
+```{r tab5, results = 'asis'}
+Monthly_Driver <- function(df, Nm, FUN = mean) {
+  df %>% filter(Name == Nm, date >= ymd(20200901)) %>% mutate(YearMonth = format(date, "%Y%m")) %>%
+    group_by(YearMonth) %>% summarise(Level = FUN(TRI))
+}
+Drivers <- list(
+  VIX = Monthly_Driver(Implied_Vol, "VIX"),
+  `Global EPU` = Monthly_Driver(Uncertainty_Indexes, "EPUCGLCP", dplyr::last),
+  `MOVE (bond vol)` = Monthly_Driver(Uncertainty_Indexes, "MOVE_Index"),
+  `ZAR vol` = Local_Cncy_Vol_Index %>% mutate(Name = "SAVIUSD") %>% Monthly_Driver("SAVIUSD"),
+  `Oil vol` = Commods %>% filter(Name == "Oil_Brent", date >= ymd(20200801)) %>% arrange(date) %>%
+    mutate(Ret = TRI / lag(TRI) - 1, YearMonth = format(date, "%Y%m")) %>% filter(date >= ymd(20200901)) %>%
+    group_by(YearMonth) %>% summarise(Level = sd(Ret, na.rm = TRUE) * sqrt(252)))
+map2_df(Drivers, names(Drivers), ~ Regime_Means(Measures, .x, .y)) %>%
+  gather(Regime, Ratio, High, Low) %>%
+  mutate(Col = paste(Measure, Regime, sep = ": ")) %>%
+  select(Driver, Col, Ratio) %>% spread(Col, Ratio) %>%
+  select(Driver, `Weighted CSV: High`, `Weighted CSV: Low`, `Avg Correlation (Top 40): High`, `Avg Correlation (Top 40): Low`,
+         `Peer Fund Dispersion: High`, `Peer Fund Dispersion: Low`) %>%
+  setNames(c("Driver", "CSV high", "CSV low", "Corr. high", "Corr. low", "Peer disp. high", "Peer disp. low")) %>%
+  Print_Table(Caption = "Alpha-opportunity measures in high and low macro regimes, relative to their average \\label{tab5}")
+```
+
+Table \ref{tab5} links the alpha opportunity to global conditions. In high-VIX months dispersion rises by 17%, but stocks also become 23% more correlated. Global stress therefore creates a two-sided opportunity: there is more to gain from picking the right stocks, but more of the market moves together, so the gains go to managers who are positioned correctly on the macro theme. This is why peer fund returns spread out more when the VIX or global policy uncertainty is high (by 18% and 20%). Oil volatility raises both dispersion and correlation, as commodity shocks split the market into Resources and the rest. Bond market volatility (MOVE) raises correlation without raising dispersion, which is the least helpful combination for stock-pickers. The sample is short (73 months), so these regime effects should be read as indicative.
+
+# Conclusion \label{Conclusion}
+
+Local volatility has not risen steadily, but it is high again in 2026, and it is driven mainly from offshore. It shares its major spikes with global markets, but the 2026 episode tracks emerging markets, and periods of high global stress raise local volatility by about a third. SafeCore has delivered alpha, but it does nothing to dampen this volatility, and its risk is now concentrated in a handful of gold miners. The opportunity to add value through stock selection has improved to its best level since 2022, yet the macro regimes that create this opportunity are the same ones that make stocks fall together.
+
+We therefore recommend keeping SafeCore's stock-selection process, but adding a deliberate risk ballast: a cap on the share of risk any one sector can contribute, a tilt towards low-volatility stocks using our realised-volatility score, and regular monitoring of offshore stress indicators such as the VIX, VXEEM and oil volatility. This would let the fund keep its edge while limiting the damage when global storms reach local shores.
 
 \newpage
 
 # References {-}
 
 <div id="refs"></div>
-
-
-# Appendix {-}
-
-## Appendix A {-}
-
-Some appendix information here
-
-## Appendix B {-}
-
